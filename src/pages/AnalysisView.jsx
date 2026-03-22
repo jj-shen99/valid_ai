@@ -33,41 +33,15 @@ export default function AnalysisView() {
       updateModuleProgress(moduleName, 'running')
     })
 
-    const generateMockFindings = () => {
-      const severities = ['Critical', 'High', 'Medium', 'Info']
-      const categories = [
-        'Off-by-one error',
-        'Missing null check',
-        'SQL injection risk',
-        'Unhandled exception',
-        'Performance issue',
-        'API hallucination',
-      ]
-
+    const completeModules = () => {
       selectedModules.forEach((moduleName) => {
-        const findingCount = Math.floor(Math.random() * 4)
-        for (let i = 0; i < findingCount; i++) {
-          const finding = {
-            id: `${moduleName}-${i}`,
-            module: moduleName,
-            moduleName: MODULES[moduleName].name,
-            severity: severities[Math.floor(Math.random() * severities.length)],
-            category: categories[Math.floor(Math.random() * categories.length)],
-            description: `Found potential ${categories[Math.floor(Math.random() * categories.length)].toLowerCase()} in the submitted code.`,
-            lineNumber: Math.floor(Math.random() * 100) + 1,
-            suggestion: 'Review the code at this location and apply the recommended fix pattern.',
-            chapterLink: `Ch ${Math.floor(Math.random() * 13) + 1}`,
-            timestamp: new Date().toISOString(),
-          }
-          addFinding(finding)
-        }
         updateModuleProgress(moduleName, 'complete')
       })
     }
 
-    const timer = setTimeout(generateMockFindings, 1500)
+    const timer = setTimeout(completeModules, 1500)
     return () => clearTimeout(timer)
-  }, [isRunning, selectedModules, updateModuleProgress, addFinding])
+  }, [isRunning, selectedModules, updateModuleProgress])
 
   const sortedFindings = [...findings].sort((a, b) => {
     const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }

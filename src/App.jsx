@@ -5,7 +5,8 @@ import CodeSubmission from './pages/CodeSubmission'
 import AnalysisView from './pages/AnalysisView'
 import Settings from './pages/Settings'
 import TrendHistory from './pages/TrendHistory'
-import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp } from 'lucide-react'
+import Tutorials from './pages/Tutorials'
+import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, BookOpen } from 'lucide-react'
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
@@ -56,6 +57,17 @@ export default function App() {
                 Trends
               </button>
               <button
+                onClick={() => setCurrentPage('tutorials')}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                  currentPage === 'tutorials'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <BookOpen size={18} />
+                Learn
+              </button>
+              <button
                 onClick={() => setCurrentPage('settings')}
                 className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
                   currentPage === 'settings'
@@ -75,6 +87,7 @@ export default function App() {
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'submit' && <CodeSubmission />}
         {currentPage === 'trends' && <TrendHistory />}
+        {currentPage === 'tutorials' && <Tutorials />}
         {currentPage === 'settings' && <Settings />}
       </main>
     </div>

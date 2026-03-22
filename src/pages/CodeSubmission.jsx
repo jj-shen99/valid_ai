@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useStore } from '../store'
 import CodeEditor from '../components/CodeEditor'
 import ModuleSelector from '../components/ModuleSelector'
+import { runAnalysis } from '../modules/analysisEngine'
 import { Play, Upload } from 'lucide-react'
 
 const LANGUAGE_OPTIONS = [
@@ -60,19 +61,31 @@ export default function CodeSubmission() {
     clearFindings()
     setShowAnalysis(true)
 
-    const submission = {
-      code,
-      prompt,
-      language,
-      modules: selectedModules,
-      timestamp: new Date().toISOString(),
-      score: Math.round(Math.random() * 100),
-    }
-    addSubmission(submission)
+    try {
+      const apiKey = useStore.getState().apiKey
+      const findings = await runAnalysis(code, language, selectedModules, prompt, apiKey)
+      
+      findings.forEach(finding => {
+        useStore.getState().addFinding(finding)
+      })
 
-    setTimeout(() => {
+      const score = findings.length === 0 ? 100 : Math.max(0, 100 - (findings.length * 5))
+      const submission = {
+        code,
+        prompt,
+        language,
+        modules: selectedModules,
+        timestamp: new Date().toISOString(),
+        score: Math.min(100, score),
+        findings,
+      }
+      addSubmission(submission)
+    } catch (error) {
+      console.error('Analysis error:', error)
+      alert('Error running analysis: ' + error.message)
+    } finally {
       setIsRunning(false)
-    }, 2000)
+    }
   }
 
   const handleFileUpload = (e) => {

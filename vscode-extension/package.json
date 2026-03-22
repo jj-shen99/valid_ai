@@ -1,0 +1,75 @@
+{
+  "name": "validai",
+  "displayName": "ValidAI - Code Testing for AI-Generated Code",
+  "description": "Test AI-generated code directly in VS Code using ValidAI modules",
+  "version": "0.1.0",
+  "publisher": "jj-shen99",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Linters",
+    "Testing"
+  ],
+  "activationEvents": [
+    "onCommand:validai.analyzeFile",
+    "onCommand:validai.analyzeSelection"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "validai.analyzeFile",
+        "title": "ValidAI: Analyze Current File"
+      },
+      {
+        "command": "validai.analyzeSelection",
+        "title": "ValidAI: Analyze Selection"
+      },
+      {
+        "command": "validai.openWebUI",
+        "title": "ValidAI: Open Web UI"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "validai.analyzeFile",
+          "group": "1_modification"
+        },
+        {
+          "command": "validai.analyzeSelection",
+          "group": "1_modification"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "ValidAI",
+      "properties": {
+        "validai.webUIUrl": {
+          "type": "string",
+          "default": "http://localhost:3000",
+          "description": "URL of the ValidAI web interface"
+        },
+        "validai.enableDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show ValidAI findings as VS Code diagnostics"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@types/node": "^18.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0"
+  }
+}
