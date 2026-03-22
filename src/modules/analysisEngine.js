@@ -1,21 +1,42 @@
 import { failureModeScanner } from './failureMode'
 import { securityProbe } from './securityProbe'
 import { hallucinationDetector } from './hallucinationDetector'
+import { propertyGenerator } from './propertyGenerator'
+import { complexityProfiler } from './complexityProfiler'
+import { differentialRunner } from './differentialRunner'
+import { oracleChecker } from './oracleChecker'
+import { mutationScorer } from './mutationScorer'
+import { promptTestabilityScore } from './promptTestability'
+import { aiReviewAssistant } from './aiReviewAssistant'
 
 const MODULE_REGISTRY = {
   failureMode: failureModeScanner,
   security: securityProbe,
   hallucination: hallucinationDetector,
+  property: propertyGenerator,
+  complexity: complexityProfiler,
+  differential: differentialRunner,
+  oracle: oracleChecker,
+  mutation: mutationScorer,
+  prompt: promptTestabilityScore,
+  aiReview: aiReviewAssistant,
 }
 
-export const runAnalysis = async (code, language, selectedModules) => {
+export const runAnalysis = async (code, language, selectedModules, prompt = '', apiKey = '') => {
   const findings = []
 
   for (const moduleName of selectedModules) {
     const moduleFunc = MODULE_REGISTRY[moduleName]
     if (moduleFunc) {
       try {
-        const moduleFindings = moduleFunc(code, language)
+        let moduleFindings
+        if (moduleName === 'prompt') {
+          moduleFindings = moduleFunc(code, prompt)
+        } else if (moduleName === 'aiReview') {
+          moduleFindings = await moduleFunc(code, language, apiKey)
+        } else {
+          moduleFindings = moduleFunc(code, language)
+        }
         findings.push(...moduleFindings)
       } catch (error) {
         console.error(`Error in module ${moduleName}:`, error)
