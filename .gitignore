@@ -8,7 +8,16 @@ Thumbs.db
 *.swp
 *.swo
 
-# Future build artifacts (Phase 2+)
+# Dependencies
 node_modules/
+package-lock.json
+yarn.lock
+
+# Build artifacts
 dist/
 .env
+.env.local
+
+# IDE
+*.iml
+.DS_Store

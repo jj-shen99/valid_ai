@@ -4,7 +4,7 @@
 
 ValidAI is a browser-native static analysis tool that scans AI-generated code for the failure modes catalogued in the book. No installation, no backend, no build step — open `index.html` and start testing.
 
-![Phase 1](https://img.shields.io/badge/Phase-1-4af0b0?style=flat-square) ![No dependencies](https://img.shields.io/badge/dependencies-none-4af0b0?style=flat-square) ![License](https://img.shields.io/badge/license-MIT-4af0b0?style=flat-square)
+![Phase 2](https://img.shields.io/badge/Phase-2-4af0b0?style=flat-square) ![No dependencies](https://img.shields.io/badge/dependencies-none-4af0b0?style=flat-square) ![License](https://img.shields.io/badge/license-MIT-4af0b0?style=flat-square)
 
 ---
 
@@ -24,15 +24,17 @@ That's it. No `npm install`. No server. Works entirely in the browser.
 
 ---
 
-## Phase 1 Modules
-
-Each module targets a specific AI failure mode and maps directly to a book chapter.
+## Modules
 
 | Module | What it detects | Book chapter |
 |--------|----------------|--------------|
 | **Failure Mode Scanner** | Silent exception swallowing, missing input validation, off-by-one boundaries, inconsistent return types, global state mutation | Chapter 3 |
 | **Security Probe** | SQL injection, hardcoded secrets, weak cryptography (MD5/SHA-1/AES-ECB), shell injection, missing auth checks | Chapter 13 |
 | **Hallucination Detector** | Non-existent API calls, deprecated method signatures, wrong parameter counts | Chapter 2 |
+| **Property Generator** | Infers testable properties from function signatures; generates Hypothesis / fast-check stubs | Chapter 7 |
+| **Complexity Profiler** | Nested O(n²) loops, N+1 query patterns, unbounded recursion, memory accumulation | Chapter 9 |
+| **Differential Runner** | Interactive two-implementation comparison across 20 auto-generated inputs | Chapter 8 |
+| **AI Review Assistant** | Claude-powered semantic review for AI-specific anti-patterns (requires API key) | Chapter 11 |
 
 ### Supported Languages
 Python · JavaScript · TypeScript · Java · Go
@@ -102,18 +104,17 @@ validai/
 
 ## Roadmap
 
-### Phase 2 (in progress)
-- [ ] **Property Generator** — synthesises Hypothesis/fast-check test stubs from function signatures
-- [ ] **Complexity Profiler** — O(n²) detection, N+1 query patterns, benchmark at 10×/100× input scale
-- [ ] **AI Review Assistant** — Claude API integration (bring your own key) for semantic anti-pattern review
-- [ ] **Differential Runner** — compare two implementations against a shared input corpus
-- [ ] Pyodide integration — execute Python property tests in-browser
-- [ ] GitHub Gist import
-- [ ] Export findings as JSON / Markdown
+### Phase 1 ✓ — Core shell + 3 modules
+Failure Mode Scanner, Security Probe, Hallucination Detector.
 
-### Phase 3
-- [ ] GitHub App — post findings as PR comments in SARIF format
-- [ ] Trend history — quality score over time across submissions
+### Phase 2 ✓ — Execution sandbox + 4 more modules
+Property Generator, Complexity Profiler, Differential Runner, AI Review Assistant. GitHub Gist import. JSON + Markdown export.
+
+### Phase 3 (planned)
+- [ ] GitHub App — post findings as PR comments (SARIF format)
+- [ ] Trend history — quality score over time per function/file
+- [ ] Mutation Scorer — import a test suite, measure what mutations it catches
+- [ ] Oracle Checker — compare code behaviour against a plain-English spec
 - [ ] VS Code extension
 
 ---
