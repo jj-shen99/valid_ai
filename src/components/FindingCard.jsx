@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp, Copy, ExternalLink } from 'lucide-react'
-import { ChapterLink } from '../utils/chapterLinks'
+import { ChapterLink } from '../utils/chapterLinks.jsx'
 
 const severityColors = {
   Critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', badge: 'bg-red-100 text-red-800' },
