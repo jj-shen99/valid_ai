@@ -4,7 +4,8 @@ import Dashboard from './pages/Dashboard'
 import CodeSubmission from './pages/CodeSubmission'
 import AnalysisView from './pages/AnalysisView'
 import Settings from './pages/Settings'
-import { BarChart3, Settings as SettingsIcon, Home, FileText } from 'lucide-react'
+import TrendHistory from './pages/TrendHistory'
+import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp } from 'lucide-react'
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
@@ -44,6 +45,17 @@ export default function App() {
                 Submit Code
               </button>
               <button
+                onClick={() => setCurrentPage('trends')}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                  currentPage === 'trends'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <TrendingUp size={18} />
+                Trends
+              </button>
+              <button
                 onClick={() => setCurrentPage('settings')}
                 className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
                   currentPage === 'settings'
@@ -62,6 +74,7 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'submit' && <CodeSubmission />}
+        {currentPage === 'trends' && <TrendHistory />}
         {currentPage === 'settings' && <Settings />}
       </main>
     </div>
