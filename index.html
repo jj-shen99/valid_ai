@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ValidAI — Testing Framework for AI-Generated Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:        #0d0f11;
+  --bg2:       #131618;
+  --bg3:       #1a1d21;
+  --bg4:       #202428;
+  --line:      rgba(255,255,255,0.07);
+  --line2:     rgba(255,255,255,0.13);
+  --text:      #c8cdd6;
+  --text2:     #7a8291;
+  --text3:     #48505c;
+  --accent:    #4af0b0;
+  --accent2:   #1fd98e;
+  --crit:      #f55353;
+  --high:      #f5a623;
+  --med:       #f5e623;
+  --info:      #5b9cf5;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'IBM Plex Sans', sans-serif;
+  --radius:    6px;
+  --radius2:   10px;
+}
+html { font-size: 14px; background: var(--bg); color: var(--text); }
+body {
+  font-family: var(--sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+button { cursor: pointer; font-family: inherit; }
+textarea, input, select { font-family: var(--mono); }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 3px; }
+
+/* ── Topbar ────────────────────────────────────────────────────────────── */
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  height: 52px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  flex-shrink: 0;
+}
+#topbar .wordmark {
+  font-family: var(--mono);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#topbar .wordmark .logo-mark {
+  width: 28px; height: 28px;
+  background: var(--accent);
+  border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: #000;
+  font-weight: 600;
+}
+#topbar .meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 0.04em;
+}
+.top-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(74,240,176,0.1);
+  color: var(--accent);
+  border: 1px solid rgba(74,240,176,0.2);
+}
+
+/* ── Main layout ───────────────────────────────────────────────────────── */
+#main {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  flex: 1;
+  min-height: 0;
+}
+#left-panel {
+  border-right: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--bg);
+}
+#right-panel {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: var(--bg2);
+}
+
+/* ── Panel headers ─────────────────────────────────────────────────────── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.panel-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text2);
+}
+
+/* ── Code Editor ───────────────────────────────────────────────────────── */
+#code-section {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+#lang-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  padding: 0 20px;
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.lang-tab {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 8px 14px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s;
+  margin-bottom: -1px;
+}
+.lang-tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.lang-tab:hover:not(.active) { color: var(--text2); }
+
+#code-editor {
+  flex: 1;
+  width: 100%;
+  min-height: 240px;
+  background: var(--bg2);
+  border: none;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.65;
+  padding: 16px 20px;
+  resize: none;
+  outline: none;
+  tab-size: 2;
+}
+#code-editor::placeholder { color: var(--text3); }
+
+/* ── Prompt section ────────────────────────────────────────────────────── */
+#prompt-section {
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.prompt-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px 0;
+}
+.prompt-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+.optional-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
+#prompt-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 8px 20px 14px;
+  resize: none;
+  outline: none;
+  min-height: 68px;
+}
+#prompt-input::placeholder { color: var(--text3); }
+
+/* ── Module selector ───────────────────────────────────────────────────── */
+#module-section {
+  border-top: 1px solid var(--line);
+  padding: 16px 20px;
+  flex-shrink: 0;
+}
+.module-section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 12px;
+}
+.module-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.module-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: var(--bg2);
+  position: relative;
+}
+.module-item.selected {
+  border-color: rgba(74,240,176,0.35);
+  background: rgba(74,240,176,0.05);
+}
+.module-item:hover:not(.selected) {
+  border-color: var(--line2);
+  background: var(--bg3);
+}
+.module-check {
+  width: 16px; height: 16px;
+  border-radius: 3px;
+  border: 1px solid var(--line2);
+  background: var(--bg3);
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.module-item.selected .module-check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.check-icon { display: none; }
+.module-item.selected .check-icon { display: block; }
+.module-info { flex: 1; min-width: 0; }
+.module-name {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.module-desc {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+.module-chapter {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ── Run button ────────────────────────────────────────────────────────── */
+#run-section {
+  border-top: 1px solid var(--line);
+  padding: 16px 20px;
+  flex-shrink: 0;
+}
+#run-btn {
+  width: 100%;
+  height: 42px;
+  background: var(--accent);
+  color: #000;
+  border: none;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s, transform 0.1s;
+}
+#run-btn:hover { background: var(--accent2); }
+#run-btn:active { transform: scale(0.99); }
+#run-btn:disabled {
+  background: var(--bg4);
+  color: var(--text3);
+  cursor: not-allowed;
+  transform: none;
+}
+.run-spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+#run-btn.running .run-spinner { display: block; }
+#run-btn.running .run-label { opacity: 0.6; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Right panel: empty state ──────────────────────────────────────────── */
+#empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  padding: 48px;
+  text-align: center;
+  gap: 16px;
+}
+.empty-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 8px;
+  margin-bottom: 8px;
+  max-width: 360px;
+}
+.empty-cell {
+  aspect-ratio: 1;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--bg3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 12px;
+}
+.empty-cell .ec-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text3);
+  text-align: center;
+  line-height: 1.4;
+}
+.empty-icon { font-size: 20px; opacity: 0.5; }
+.empty-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text2);
+  font-weight: 500;
+}
+.empty-sub { font-size: 12px; color: var(--text3); max-width: 280px; line-height: 1.6; }
+
+/* ── Results panel ─────────────────────────────────────────────────────── */
+#results-panel {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Module progress strip */
+#module-progress {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.mod-prog-item {
+  flex: 1;
+  padding: 10px 14px;
+  border-right: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mod-prog-item:last-child { border-right: none; }
+.mod-prog-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--text3);
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.mod-prog-dot.running {
+  background: var(--accent);
+  animation: pulse 1s ease-in-out infinite;
+}
+.mod-prog-dot.done { background: var(--accent); animation: none; }
+.mod-prog-dot.error { background: var(--crit); animation: none; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.mod-prog-name {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mod-prog-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  margin-left: auto;
+}
+
+/* Score bar */
+#score-bar {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.score-cell {
+  padding: 14px 18px;
+  border-right: 1px solid var(--line);
+}
+.score-cell:last-child { border-right: none; }
+.score-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 4px;
+}
+.score-val {
+  font-family: var(--mono);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+.score-val.crit { color: var(--crit); }
+.score-val.high { color: var(--high); }
+.score-val.med  { color: var(--med); }
+.score-val.good { color: var(--accent); }
+
+/* Filter bar */
+#filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  flex-shrink: 0;
+}
+.filter-btn {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  color: var(--text3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.filter-btn.active { color: var(--text); border-bottom-color: var(--text2); }
+.filter-btn:hover:not(.active) { color: var(--text2); }
+.filter-count {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--bg4);
+  color: var(--text3);
+}
+.filter-btn.active .filter-count { background: var(--bg3); color: var(--text2); }
+.filter-spacer { flex: 1; }
+#filter-module {
+  font-family: var(--mono);
+  font-size: 11px;
+  background: var(--bg3);
+  border: 1px solid var(--line);
+  color: var(--text2);
+  border-radius: var(--radius);
+  padding: 5px 8px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* Findings list */
+#findings-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+.finding-item {
+  display: grid;
+  grid-template-columns: 4px 1fr;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.finding-item:hover { background: var(--bg3); }
+.finding-item.active-finding { background: var(--bg3); }
+.finding-sev-bar {
+  width: 4px;
+  flex-shrink: 0;
+}
+.sev-critical .finding-sev-bar { background: var(--crit); }
+.sev-high .finding-sev-bar     { background: var(--high); }
+.sev-medium .finding-sev-bar   { background: var(--med); }
+.sev-info .finding-sev-bar     { background: var(--info); }
+.finding-body { padding: 12px 16px; }
+.finding-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.finding-sev-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+.sev-critical .finding-sev-badge { background: rgba(245,83,83,0.15); color: var(--crit); }
+.sev-high .finding-sev-badge     { background: rgba(245,166,35,0.15); color: var(--high); }
+.sev-medium .finding-sev-badge   { background: rgba(245,230,35,0.15); color: var(--med); }
+.sev-info .finding-sev-badge     { background: rgba(91,156,245,0.15); color: var(--info); }
+.finding-module {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+}
+.finding-title {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text);
+  margin-bottom: 3px;
+  line-height: 1.4;
+}
+.finding-snippet {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  background: var(--bg3);
+  padding: 4px 8px;
+  border-radius: 3px;
+  margin-top: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Detail panel ──────────────────────────────────────────────────────── */
+#detail-panel {
+  border-top: 1px solid var(--line);
+  flex-shrink: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  background: var(--bg);
+}
+#detail-panel.open {
+  max-height: 400px;
+  overflow-y: auto;
+}
+#detail-inner { padding: 20px; }
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.detail-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+.detail-close {
+  font-family: var(--mono);
+  font-size: 18px;
+  background: none;
+  border: none;
+  color: var(--text3);
+  line-height: 1;
+  padding: 0;
+  flex-shrink: 0;
+}
+.detail-close:hover { color: var(--text2); }
+.detail-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.detail-tag {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: 1px solid var(--line2);
+  color: var(--text2);
+}
+.detail-section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+}
+.detail-explanation {
+  font-size: 12.5px;
+  color: var(--text2);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+.detail-code-block {
+  background: var(--bg2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-bottom: 14px;
+  overflow-x: auto;
+  white-space: pre;
+}
+.detail-code-block.bad  { border-left: 3px solid var(--crit); }
+.detail-code-block.good { border-left: 3px solid var(--accent); }
+.code-bad-label  { color: var(--crit); }
+.code-good-label { color: var(--accent); }
+.detail-chapter-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--accent);
+  text-decoration: none;
+  border: 1px solid rgba(74,240,176,0.25);
+  border-radius: var(--radius);
+  padding: 6px 12px;
+  transition: background 0.15s;
+}
+.detail-chapter-link:hover { background: rgba(74,240,176,0.08); }
+
+/* ── Stream log (bottom of right panel during run) ─────────────────────── */
+#stream-log {
+  display: none;
+  padding: 12px 20px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--bg);
+  flex-shrink: 0;
+  max-height: 64px;
+  overflow: hidden;
+}
+.stream-line { line-height: 1.8; }
+.stream-line .sl-time { color: var(--text3); margin-right: 8px; }
+.stream-line .sl-text { color: var(--text2); }
+.stream-line .sl-accent { color: var(--accent); }
+
+/* ── Animations ────────────────────────────────────────────────────────── */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.finding-item { animation: slideIn 0.2s ease forwards; }
+
+/* ── Responsive ────────────────────────────────────────────────────────── */
+@media (max-width: 800px) {
+  #main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  #left-panel { border-right: none; border-bottom: 1px solid var(--line); max-height: 55vh; }
+  #score-bar { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div id="topbar">
+  <div class="wordmark">
+    <div class="logo-mark">V</div>
+    ValidAI
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span class="top-badge">Phase 1</span>
+    <span class="meta">Testing the Machine — Companion Tool</span>
+  </div>
+</div>
+
+<!-- Main split -->
+<div id="main">
+
+  <!-- LEFT: Input panel -->
+  <div id="left-panel">
+    <div class="panel-header">
+      <span class="panel-title">Code Submission</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text3)" id="char-count">0 chars</span>
+    </div>
+
+    <!-- Language tabs + editor -->
+    <div id="code-section" style="flex:1;display:flex;flex-direction:column">
+      <div id="lang-bar">
+        <button class="lang-tab active" data-lang="python">Python</button>
+        <button class="lang-tab" data-lang="javascript">JavaScript</button>
+        <button class="lang-tab" data-lang="typescript">TypeScript</button>
+        <button class="lang-tab" data-lang="java">Java</button>
+        <button class="lang-tab" data-lang="go">Go</button>
+      </div>
+      <textarea id="code-editor" spellcheck="false"
+        placeholder="# Paste AI-generated code here&#10;&#10;def get_user(username):&#10;    query = f&quot;SELECT * FROM users WHERE username = '{username}'&quot;&#10;    return db.execute(query)"></textarea>
+    </div>
+
+    <!-- Prompt field -->
+    <div id="prompt-section">
+      <div class="prompt-label-row">
+        <span class="prompt-label">Generation Prompt</span>
+        <span class="optional-badge">optional</span>
+      </div>
+      <textarea id="prompt-input" rows="3" spellcheck="false"
+        placeholder="Paste the prompt you used to generate this code..."></textarea>
+    </div>
+
+    <!-- Module selector -->
+    <div id="module-section">
+      <div class="module-section-label">Analysis Modules</div>
+      <div class="module-grid" id="module-list"></div>
+    </div>
+
+    <!-- Run -->
+    <div id="run-section">
+      <button id="run-btn" onclick="runAnalysis()">
+        <div class="run-spinner"></div>
+        <span class="run-label">Run Analysis</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT: Results panel -->
+  <div id="right-panel">
+
+    <!-- Empty state -->
+    <div id="empty-state">
+      <div class="empty-grid">
+        <div class="empty-cell">
+          <span class="empty-icon">🔬</span>
+          <span class="ec-label">Failure Mode Scanner</span>
+        </div>
+        <div class="empty-cell">
+          <span class="empty-icon">🔐</span>
+          <span class="ec-label">Security Probe</span>
+        </div>
+        <div class="empty-cell">
+          <span class="empty-icon">👻</span>
+          <span class="ec-label">Hallucination Detector</span>
+        </div>
+      </div>
+      <div class="empty-title">Paste code, pick modules, run.</div>
+      <div class="empty-sub">Each module targets a specific AI failure mode. Findings link directly to book chapters with fix patterns.</div>
+    </div>
+
+    <!-- Results (shown when run completes) -->
+    <div id="results-panel">
+
+      <!-- Module progress -->
+      <div id="module-progress"></div>
+
+      <!-- Score summary -->
+      <div id="score-bar">
+        <div class="score-cell">
+          <div class="score-label">Quality Score</div>
+          <div class="score-val good" id="score-main">—</div>
+        </div>
+        <div class="score-cell">
+          <div class="score-label">Critical</div>
+          <div class="score-val crit" id="count-crit">0</div>
+        </div>
+        <div class="score-cell">
+          <div class="score-label">High</div>
+          <div class="score-val high" id="count-high">0</div>
+        </div>
+        <div class="score-cell">
+          <div class="score-label">Medium</div>
+          <div class="score-val med" id="count-med">0</div>
+        </div>
+      </div>
+
+      <!-- Filter bar -->
+      <div id="filter-bar">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter(this)">
+          All <span class="filter-count" id="fc-all">0</span>
+        </button>
+        <button class="filter-btn" data-filter="critical" onclick="setFilter(this)">
+          Critical <span class="filter-count" id="fc-crit">0</span>
+        </button>
+        <button class="filter-btn" data-filter="high" onclick="setFilter(this)">
+          High <span class="filter-count" id="fc-high">0</span>
+        </button>
+        <button class="filter-btn" data-filter="medium" onclick="setFilter(this)">
+          Medium <span class="filter-count" id="fc-med">0</span>
+        </button>
+        <div class="filter-spacer"></div>
+        <select id="filter-module" onchange="renderFindings()">
+          <option value="all">All modules</option>
+        </select>
+      </div>
+
+      <!-- Findings -->
+      <div id="findings-list"></div>
+
+      <!-- Stream log -->
+      <div id="stream-log"></div>
+
+    </div>
+
+    <!-- Detail panel (slides up from bottom) -->
+    <div id="detail-panel">
+      <div id="detail-inner"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   DATA: Module definitions
+═══════════════════════════════════════════════════════════════ */
+const MODULES = [
+  {
+    id: 'failure-mode',
+    name: 'Failure Mode Scanner',
+    desc: 'Off-by-one, silent failures, semantic drift, incomplete impl.',
+    chapter: 'Ch 3',
+    icon: '🔬',
+    run: runFailureModeScanner,
+  },
+  {
+    id: 'security',
+    name: 'Security Probe',
+    desc: 'Injection, weak crypto, auth gaps, OWASP Top 10 patterns.',
+    chapter: 'Ch 13',
+    icon: '🔐',
+    run: runSecurityProbe,
+  },
+  {
+    id: 'hallucination',
+    name: 'Hallucination Detector',
+    desc: 'Non-existent APIs, wrong signatures, deprecated calls.',
+    chapter: 'Ch 2',
+    icon: '👻',
+    run: runHallucinationDetector,
+  },
+];
+
+/* ═══════════════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════════════ */
+let selectedModules = new Set(['failure-mode','security','hallucination']);
+let currentLang = 'python';
+let allFindings = [];
+let activeFilter = 'all';
+let activeFinding = null;
+
+/* ═══════════════════════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════════════════════ */
+function init() {
+  renderModuleList();
+  document.getElementById('code-editor').addEventListener('input', e => {
+    document.getElementById('char-count').textContent = e.target.value.length + ' chars';
+  });
+  document.querySelectorAll('.lang-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.lang-tab').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      currentLang = t.dataset.lang;
+    });
+  });
+}
+
+function renderModuleList() {
+  const list = document.getElementById('module-list');
+  list.innerHTML = MODULES.map(m => `
+    <div class="module-item ${selectedModules.has(m.id) ? 'selected' : ''}" onclick="toggleModule('${m.id}', this)">
+      <div class="module-check">
+        <svg class="check-icon" width="10" height="8" viewBox="0 0 10 8" fill="none">
+          <path d="M1 4L3.5 6.5L9 1" stroke="#000" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="module-info">
+        <div class="module-name">${m.icon}&nbsp; ${m.name}</div>
+        <div class="module-desc">${m.desc}</div>
+      </div>
+      <div class="module-chapter">${m.chapter}</div>
+    </div>
+  `).join('');
+}
+
+function toggleModule(id, el) {
+  if (selectedModules.has(id)) {
+    if (selectedModules.size === 1) return;
+    selectedModules.delete(id);
+    el.classList.remove('selected');
+  } else {
+    selectedModules.add(id);
+    el.classList.add('selected');
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ANALYSIS RUNNER
+═══════════════════════════════════════════════════════════════ */
+async function runAnalysis() {
+  const code = document.getElementById('code-editor').value.trim();
+  if (!code) { alert('Paste some code first.'); return; }
+  const prompt = document.getElementById('prompt-input').value.trim();
+  const modules = MODULES.filter(m => selectedModules.has(m.id));
+
+  // UI state: running
+  const btn = document.getElementById('run-btn');
+  btn.disabled = true;
+  btn.classList.add('running');
+  btn.querySelector('.run-label').textContent = 'Analysing…';
+
+  allFindings = [];
+  activeFinding = null;
+
+  document.getElementById('empty-state').style.display = 'none';
+  document.getElementById('results-panel').style.display = 'flex';
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('stream-log').style.display = 'block';
+
+  // Build progress strip
+  buildProgressStrip(modules);
+
+  // Reset scores
+  document.getElementById('score-main').textContent = '—';
+  ['crit','high','med'].forEach(k => document.getElementById(`count-${k}`).textContent = '0');
+  document.getElementById('findings-list').innerHTML = '';
+
+  // Reset filter module dropdown
+  const fmod = document.getElementById('filter-module');
+  fmod.innerHTML = '<option value="all">All modules</option>' +
+    modules.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+
+  // Run each module sequentially (simulated async)
+  for (const mod of modules) {
+    setModuleState(mod.id, 'running');
+    streamLog(`Running ${mod.name}…`);
+    await delay(400 + Math.random() * 600);
+
+    try {
+      const findings = mod.run(code, prompt, currentLang);
+      findings.forEach(f => {
+        f.moduleId = mod.id;
+        f.moduleName = mod.name;
+        allFindings.push(f);
+        appendFinding(f);
+      });
+      setModuleState(mod.id, 'done', findings.length);
+      streamLog(`${mod.name}: ${findings.length} finding${findings.length !== 1 ? 's' : ''}`, 'accent');
+    } catch(e) {
+      setModuleState(mod.id, 'error');
+      streamLog(`${mod.name}: error`, 'err');
+    }
+    await delay(200);
+  }
+
+  updateScores();
+  streamLog('Analysis complete.', 'accent');
+
+  btn.disabled = false;
+  btn.classList.remove('running');
+  btn.querySelector('.run-label').textContent = 'Run Analysis';
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function buildProgressStrip(modules) {
+  document.getElementById('module-progress').innerHTML = modules.map(m => `
+    <div class="mod-prog-item" id="mp-${m.id}">
+      <div class="mod-prog-dot" id="mpd-${m.id}"></div>
+      <span class="mod-prog-name">${m.name}</span>
+      <span class="mod-prog-count" id="mpc-${m.id}"></span>
+    </div>
+  `).join('');
+}
+
+function setModuleState(id, state, count) {
+  const dot = document.getElementById(`mpd-${id}`);
+  if (dot) { dot.className = `mod-prog-dot ${state}`; }
+  if (count !== undefined) {
+    const c = document.getElementById(`mpc-${id}`);
+    if (c) c.textContent = count > 0 ? count : '';
+  }
+}
+
+let streamLines = [];
+function streamLog(text, type) {
+  const el = document.getElementById('stream-log');
+  const t = new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const cls = type === 'accent' ? 'sl-accent' : type === 'err' ? 'sl-crit' : 'sl-text';
+  streamLines = streamLines.slice(-2);
+  streamLines.push(`<div class="stream-line"><span class="sl-time">${t}</span><span class="${cls}">${text}</span></div>`);
+  el.innerHTML = streamLines.join('');
+}
+
+function appendFinding(f) {
+  const list = document.getElementById('findings-list');
+  const el = document.createElement('div');
+  el.className = `finding-item sev-${f.severity.toLowerCase()}`;
+  el.innerHTML = `
+    <div class="finding-sev-bar"></div>
+    <div class="finding-body">
+      <div class="finding-header">
+        <span class="finding-sev-badge">${f.severity}</span>
+        <span class="finding-module">${f.moduleName}</span>
+      </div>
+      <div class="finding-title">${f.title}</div>
+      ${f.snippet ? `<div class="finding-snippet">${escHtml(f.snippet)}</div>` : ''}
+    </div>
+  `;
+  el.addEventListener('click', () => showDetail(f, el));
+  list.appendChild(el);
+}
+
+function updateScores() {
+  const bySev = { critical:0, high:0, medium:0, info:0 };
+  allFindings.forEach(f => { bySev[f.severity.toLowerCase()] = (bySev[f.severity.toLowerCase()]||0)+1; });
+  document.getElementById('count-crit').textContent = bySev.critical;
+  document.getElementById('count-high').textContent = bySev.high;
+  document.getElementById('count-med').textContent = bySev.medium;
+
+  const score = Math.max(0, 100 - bySev.critical*25 - bySev.high*10 - bySev.medium*4 - bySev.info);
+  const el = document.getElementById('score-main');
+  el.textContent = score;
+  el.className = 'score-val ' + (score >= 80 ? 'good' : score >= 60 ? 'med' : score >= 40 ? 'high' : 'crit');
+
+  const all = allFindings.length;
+  document.getElementById('fc-all').textContent = all;
+  document.getElementById('fc-crit').textContent = bySev.critical;
+  document.getElementById('fc-high').textContent = bySev.high;
+  document.getElementById('fc-med').textContent = bySev.medium;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FILTERING
+═══════════════════════════════════════════════════════════════ */
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.filter;
+  renderFindings();
+}
+
+function renderFindings() {
+  const modFilter = document.getElementById('filter-module').value;
+  const filtered = allFindings.filter(f => {
+    const sevOk = activeFilter === 'all' || f.severity.toLowerCase() === activeFilter;
+    const modOk = modFilter === 'all' || f.moduleId === modFilter;
+    return sevOk && modOk;
+  });
+  const list = document.getElementById('findings-list');
+  list.innerHTML = '';
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="padding:32px;text-align:center;font-family:var(--mono);font-size:12px;color:var(--text3)">No findings match current filters</div>`;
+    return;
+  }
+  filtered.forEach(f => appendFinding(f));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DETAIL PANEL
+═══════════════════════════════════════════════════════════════ */
+function showDetail(f, el) {
+  document.querySelectorAll('.finding-item').forEach(x => x.classList.remove('active-finding'));
+  if (activeFinding === f) {
+    activeFinding = null;
+    document.getElementById('detail-panel').classList.remove('open');
+    return;
+  }
+  el.classList.add('active-finding');
+  activeFinding = f;
+  document.getElementById('detail-inner').innerHTML = buildDetail(f);
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('detail-panel').scrollTop = 0;
+}
+
+function buildDetail(f) {
+  return `
+    <div class="detail-title-row">
+      <div class="detail-title">${f.title}</div>
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-meta">
+      <span class="finding-sev-badge sev-${f.severity.toLowerCase()}" style="padding:3px 8px;border-radius:3px">${f.severity}</span>
+      <span class="detail-tag">${f.moduleName}</span>
+      ${f.line ? `<span class="detail-tag">Line ${f.line}</span>` : ''}
+      ${f.cweId ? `<span class="detail-tag">${f.cweId}</span>` : ''}
+    </div>
+    <div class="detail-section-label">What's wrong</div>
+    <div class="detail-explanation">${f.explanation}</div>
+    ${f.badCode ? `
+      <div class="detail-section-label"><span class="code-bad-label">✗</span> Vulnerable pattern</div>
+      <div class="detail-code-block bad">${escHtml(f.badCode)}</div>
+    ` : ''}
+    ${f.fixCode ? `
+      <div class="detail-section-label"><span class="code-good-label">✓</span> Recommended fix</div>
+      <div class="detail-code-block good">${escHtml(f.fixCode)}</div>
+    ` : ''}
+    <a class="detail-chapter-link" href="#" onclick="return false">
+      📖 ${f.chapter} — Testing the Machine
+    </a>
+  `;
+}
+
+function closeDetail() {
+  activeFinding = null;
+  document.querySelectorAll('.finding-item').forEach(x => x.classList.remove('active-finding'));
+  document.getElementById('detail-panel').classList.remove('open');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODULE 1: FAILURE MODE SCANNER
+═══════════════════════════════════════════════════════════════ */
+function runFailureModeScanner(code, prompt, lang) {
+  const findings = [];
+  const lines = code.split('\n');
+
+  // ── Pattern 1: Silent exception swallowing ──────────────────
+  const silentExcept = [
+    { py: /except\s*(\w+)?:\s*\n\s*(pass|log|print)/i, js: /catch\s*\([^)]*\)\s*\{[\s\n]*(?:console\.log|\/\/)/i },
+    { py: /except\s*Exception\s*as\s*\w+:\s*\n\s*(?:pass|return None)/i }
+  ];
+  const pySwallow = /except[\w\s,()\*]*:\s*\n(?:\s*(?:pass|return None|return|#.*)\s*\n)+/m;
+  const jsSwallow = /catch\s*\([^)]*\)\s*\{[^}]*?(?:console\.(?:log|warn)|\/\/)[\s\S]*?\}/m;
+  const swallowMatch = lang === 'python' ? pySwallow.test(code) : jsSwallow.test(code);
+  if (swallowMatch) {
+    const lineNo = findLine(lines, lang === 'python' ? /except/ : /catch/);
+    findings.push({
+      severity: 'High',
+      title: 'Silent exception swallowing',
+      snippet: lineNo ? lines[lineNo].trim() : null,
+      line: lineNo ? lineNo + 1 : null,
+      explanation: 'The code catches exceptions but continues execution without signalling the failure to callers. This is one of the most common AI generation patterns — the model adds error handling scaffolding without considering what the calling code should do when an operation fails. Silent failures mean the program continues in an invalid state, producing wrong results with no indication that anything went wrong.',
+      badCode: lang === 'python'
+        ? 'try:\n    result = process_payment(amount)\nexcept Exception as e:\n    log.error(e)  # swallowed — caller gets None\n    return None'
+        : 'try {\n  result = await processPayment(amount);\n} catch (e) {\n  console.error(e); // swallowed — caller gets undefined\n}',
+      fixCode: lang === 'python'
+        ? 'try:\n    result = process_payment(amount)\nexcept PaymentError as e:\n    raise  # re-raise with context\nexcept Exception as e:\n    raise RuntimeError("Payment processing failed") from e'
+        : 'try {\n  result = await processPayment(amount);\n} catch (e) {\n  throw new PaymentError(`Processing failed: ${e.message}`, { cause: e });\n}',
+      chapter: 'Chapter 3 — The AI Bug Zoo',
+    });
+  }
+
+  // ── Pattern 2: Missing input validation ────────────────────
+  const hasFuncDef = lang === 'python' ? /def \w+\s*\(/.test(code) : /function\s+\w+\s*\(|=>\s*\{|\w+\s*\([^)]*\)\s*\{/.test(code);
+  const hasValidation = /if\s+.*(is None|is not|!==|===|typeof|len\(|\.length|> 0|>= 0|< 0|<= 0|\bis\b|\bnot\b)/.test(code);
+  const hasEarlyReturn = /if.*:\s*\n\s*return|if.*\)\s*\{[^}]*return/.test(code);
+
+  if (hasFuncDef && !hasValidation && !hasEarlyReturn && code.length > 80) {
+    findings.push({
+      severity: 'Medium',
+      title: 'Missing input validation',
+      snippet: null,
+      line: null,
+      explanation: 'No input validation was detected at function entry points. AI-generated code often implements the happy path correctly but omits validation for null, empty, or out-of-range inputs. When these reach downstream operations, they can cause cryptic failures far from the actual problem. Specification-driven prompting (Chapter 6) reduces this by explicitly stating what edge cases must be handled.',
+      badCode: lang === 'python'
+        ? 'def calculate_discount(price, pct):\n    return price * (1 - pct / 100)  # what if price is None or pct > 100?'
+        : 'function calculateDiscount(price, pct) {\n  return price * (1 - pct / 100); // no bounds checking\n}',
+      fixCode: lang === 'python'
+        ? 'def calculate_discount(price: float, pct: float) -> float:\n    if price is None or price < 0:\n        raise ValueError(f"Invalid price: {price}")\n    if not 0 <= pct <= 100:\n        raise ValueError(f"Percentage must be 0–100, got {pct}")\n    return price * (1 - pct / 100)'
+        : 'function calculateDiscount(price, pct) {\n  if (price == null || price < 0) throw new RangeError(`Invalid price: ${price}`);\n  if (pct < 0 || pct > 100) throw new RangeError(`Pct must be 0–100, got ${pct}`);\n  return price * (1 - pct / 100);\n}',
+      chapter: 'Chapter 3 — The AI Bug Zoo',
+    });
+  }
+
+  // ── Pattern 3: Off-by-one risk in loops ────────────────────
+  const sliceRisk = lang === 'python'
+    ? /\[\s*\d*\s*:\s*(?:len\(|n\b|-1)/.test(code)
+    : /\.slice\(\s*0\s*,\s*(?:arr|list|items|data|results)\.length\s*-\s*1\)/.test(code);
+  const rangeRisk = /range\(\s*1\s*,/.test(code) || /for\s+\w+\s*=\s*1\s*;/.test(code);
+
+  if (sliceRisk || rangeRisk) {
+    const lineNo = findLine(lines, rangeRisk ? /range\(1,|= 1;/ : /slice|:\s*len/);
+    findings.push({
+      severity: 'Medium',
+      title: 'Potential off-by-one boundary',
+      snippet: lineNo !== -1 ? lines[lineNo].trim() : null,
+      line: lineNo !== -1 ? lineNo + 1 : null,
+      explanation: 'A loop or slice starts from index 1, or uses len()-1 as an upper bound. AI models reproduce the most common boundary patterns from training data, which are not always correct for the specific context. Off-by-one errors are among the most frequently generated bugs and often survive testing because they only manifest at list edges.',
+      badCode: 'items = get_items()\nfor i in range(1, len(items)):  # skips first element!\n    process(items[i])',
+      fixCode: 'items = get_items()\nfor item in items:  # iterate directly, no index math\n    process(item)\n\n# If you need the index:\nfor i, item in enumerate(items):\n    process(item)',
+      chapter: 'Chapter 3 — The AI Bug Zoo',
+    });
+  }
+
+  // ── Pattern 4: Return type inconsistency ───────────────────
+  const returnsNoneAndValue = lang === 'python'
+    ? /return None/.test(code) && /return \w/.test(code)
+    : /return null/.test(code) && /return [^;]+;/.test(code);
+  if (returnsNoneAndValue) {
+    findings.push({
+      severity: 'Medium',
+      title: 'Inconsistent return type (value vs None/null)',
+      snippet: null,
+      line: null,
+      explanation: 'This function returns None/null in some paths and a value in others without a consistent error signalling contract. Callers must defensively check for None/null in every call site, which is easily forgotten. A Result type or explicit exception is more reliable. This pattern appears when AI generates error paths separately from the main logic.',
+      badCode: lang === 'python'
+        ? 'def find_user(id):\n    user = db.query(id)\n    if not user:\n        return None  # caller must remember to check\n    return user'
+        : 'function findUser(id) {\n  const user = db.query(id);\n  if (!user) return null;  // caller must check\n  return user;\n}',
+      fixCode: lang === 'python'
+        ? '# Option A: raise an explicit exception\ndef find_user(id: int) -> User:\n    user = db.query(id)\n    if not user:\n        raise UserNotFoundError(f"No user with id={id}")\n    return user\n\n# Option B: use Optional with type hint\ndef find_user(id: int) -> Optional[User]:\n    return db.query(id)  # clearly Optional in signature'
+        : '// Option A: throw explicitly\nfunction findUser(id) {\n  const user = db.query(id);\n  if (!user) throw new NotFoundError(`No user: ${id}`);\n  return user;\n}',
+      chapter: 'Chapter 3 — The AI Bug Zoo',
+    });
+  }
+
+  // ── Pattern 5: Global state mutation ───────────────────────
+  const globalMutation = lang === 'python'
+    ? /global\s+\w+/.test(code)
+    : /^(?!.*\bconst\b|\blet\b|\bvar\b)\w+\s*=(?!=)/m.test(code);
+  if (/global\s+\w+/.test(code)) {
+    const lineNo = findLine(lines, /global\s+\w+/);
+    findings.push({
+      severity: 'Medium',
+      title: 'Global state mutation',
+      snippet: lineNo !== -1 ? lines[lineNo].trim() : null,
+      line: lineNo !== -1 ? lineNo + 1 : null,
+      explanation: 'Function modifies global state, creating hidden dependencies that make testing difficult. AI models generate global-mutating code when the generation context did not include dependency injection. Functions with implicit global state cannot be tested in isolation and create race condition risk under concurrent use.',
+      badCode: 'connection_pool = None\n\ndef get_connection():\n    global connection_pool\n    if connection_pool is None:\n        connection_pool = create_pool()  # hidden global state\n    return connection_pool.get()',
+      fixCode: 'class ConnectionManager:\n    def __init__(self, config: Config):\n        self._pool = create_pool(config)\n\n    def get_connection(self):\n        return self._pool.get()\n\n# Or inject the pool:\ndef get_connection(pool: ConnectionPool):\n    return pool.get()',
+      chapter: 'Chapter 3 — The AI Bug Zoo',
+    });
+  }
+
+  return findings;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODULE 2: SECURITY PROBE
+═══════════════════════════════════════════════════════════════ */
+function runSecurityProbe(code, prompt, lang) {
+  const findings = [];
+  const lines = code.split('\n');
+
+  // ── SQL Injection via string interpolation ─────────────────
+  const sqlInjectionPatterns = [
+    /f["'].*SELECT.*{/i,
+    /f["'].*WHERE.*{/i,
+    /".*SELECT.*"\s*%/i,
+    /\+\s*["'].*WHERE/i,
+    /query\s*=\s*f["']/i,
+    /\.format\(.*\).*(?:SELECT|INSERT|UPDATE|DELETE)/i,
+    /`.*SELECT.*\$\{/i,
+    /`.*WHERE.*\$\{/i,
+  ];
+  const hasSqlInjection = sqlInjectionPatterns.some(p => p.test(code));
+  if (hasSqlInjection) {
+    const lineNo = findLine(lines, /SELECT|INSERT|UPDATE|DELETE/i);
+    findings.push({
+      severity: 'Critical',
+      title: 'SQL Injection — string interpolation in query',
+      snippet: lineNo !== -1 ? lines[lineNo].trim() : null,
+      line: lineNo !== -1 ? lineNo + 1 : null,
+      cweId: 'CWE-89',
+      explanation: 'User-controlled data is being concatenated directly into a SQL query string. This allows an attacker to modify the query structure, bypass authentication, extract arbitrary data, or corrupt the database. AI models reproduce this pattern because string-interpolated queries are extremely common in training data — tutorials and older codebases rarely used parameterized queries. This is the #1 AI-generated security vulnerability.',
+      badCode: lang === 'python'
+        ? "query = f\"SELECT * FROM users WHERE username = '{username}'\"\ncursor.execute(query)"
+        : "const query = `SELECT * FROM users WHERE username = '${username}'`;\ndb.execute(query);",
+      fixCode: lang === 'python'
+        ? "# Always use parameterized queries (? or %s depending on driver)\ncursor.execute(\n    \"SELECT * FROM users WHERE username = %s\",\n    (username,)  # driver handles escaping\n)"
+        : "// Use parameterized queries\nawait db.query(\n  'SELECT * FROM users WHERE username = $1',\n  [username]  // driver handles escaping\n);",
+      chapter: 'Chapter 13 — The Security Horror Show',
+    });
+  }
+
+  // ── Hardcoded secrets ──────────────────────────────────────
+  const secretPatterns = [
+    { re: /(?:password|passwd|pwd)\s*=\s*["'][^"']{4,}["']/i, label: 'Hardcoded password' },
+    { re: /(?:api_key|apikey|secret_key|secret)\s*=\s*["'][A-Za-z0-9+/=_-]{8,}["']/i, label: 'Hardcoded API key' },
+    { re: /(?:token)\s*=\s*["'][A-Za-z0-9._-]{20,}["']/i, label: 'Hardcoded token' },
+    { re: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/, label: 'Embedded private key' },
+  ];
+  for (const { re, label } of secretPatterns) {
+    const m = code.match(re);
+    if (m) {
+      const lineNo = findLine(lines, re);
+      findings.push({
+        severity: 'Critical',
+        title: `${label} in source code`,
+        snippet: lineNo !== -1 ? lines[lineNo].trim().replace(/["'][^"']{6,}["']/, '"[REDACTED]"') : null,
+        line: lineNo !== -1 ? lineNo + 1 : null,
+        cweId: 'CWE-798',
+        explanation: 'A credential or secret is hardcoded directly in source code. Any developer with repository access (and in many cases, anyone who has ever had access) can see this credential. AI models frequently hardcode secrets in examples because training data contains tutorials with placeholder values that look like real credentials. These should always come from environment variables or a secrets manager.',
+        badCode: 'DB_PASSWORD = "supersecret123"\nAPI_KEY = "sk-abc123xyz789..."',
+        fixCode: lang === 'python'
+          ? 'import os\n\nDB_PASSWORD = os.environ["DB_PASSWORD"]  # from env\n# Or use a secrets manager:\nfrom your_secrets_lib import get_secret\nDB_PASSWORD = get_secret("db/password")'
+          : 'const DB_PASSWORD = process.env.DB_PASSWORD;\nif (!DB_PASSWORD) throw new Error("DB_PASSWORD env var not set");',
+        chapter: 'Chapter 13 — The Security Horror Show',
+      });
+      break;
+    }
+  }
+
+  // ── Weak cryptography ──────────────────────────────────────
+  const weakCrypto = [
+    { re: /import\s+md5|hashlib\.md5|require\(['"]md5['"]\)|CryptoJS\.MD5/i, label: 'MD5 in use', cwe: 'CWE-327' },
+    { re: /hashlib\.sha1\b|CryptoJS\.SHA1\b/i, label: 'SHA-1 in use', cwe: 'CWE-327' },
+    { re: /AES\.encrypt\(|Cipher\.getInstance\(['"]AES['"]\)/i, label: 'AES without mode specified (likely ECB)', cwe: 'CWE-327' },
+    { re: /random\.random\(\)|Math\.random\(\)/i, label: 'Insecure random (not cryptographic)', cwe: 'CWE-338' },
+  ];
+  for (const { re, label, cwe } of weakCrypto) {
+    if (re.test(code)) {
+      const lineNo = findLine(lines, re);
+      findings.push({
+        severity: 'High',
+        title: `Weak cryptography — ${label}`,
+        snippet: lineNo !== -1 ? lines[lineNo].trim() : null,
+        line: lineNo !== -1 ? lineNo + 1 : null,
+        cweId: cwe,
+        explanation: `${label} is cryptographically broken or inappropriate for security purposes. AI models generate weak crypto because broken algorithms are vastly more common in training data — MD5 and SHA-1 appear in millions of tutorials, older systems, and checksums. For password hashing use bcrypt/Argon2. For general hashing use SHA-256+. For random numbers in security contexts use secrets.token_bytes() or crypto.getRandomValues().`,
+        badCode: 'import hashlib\n# MD5 is broken — collision attacks exist\nhashed_password = hashlib.md5(password.encode()).hexdigest()',
+        fixCode: lang === 'python'
+          ? '# For password hashing:\nimport bcrypt\nhashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))\n\n# For general-purpose hashing:\nimport hashlib\nhash = hashlib.sha256(data.encode()).hexdigest()'
+          : '// For password hashing (Node.js):\nconst bcrypt = require("bcrypt");\nconst hashed = await bcrypt.hash(password, 12);\n\n// For general hashing:\nconst hash = crypto.createHash("sha256").update(data).digest("hex");',
+        chapter: 'Chapter 13 — The Security Horror Show',
+      });
+      break;
+    }
+  }
+
+  // ── Shell injection ────────────────────────────────────────
+  const shellPatterns = [
+    /subprocess\.(?:call|run|Popen|check_output)\s*\(\s*[f"'].*{/,
+    /os\.system\s*\(\s*[f"'].*{/,
+    /os\.popen\s*\(/,
+    /exec\s*\(`.*\$\{/,
+    /child_process\.exec\s*\(/,
+    /shell=True.*\+/,
+  ];
+  if (shellPatterns.some(p => p.test(code))) {
+    const lineNo = findLine(lines, /subprocess|os\.system|os\.popen|exec\(|child_process/);
+    findings.push({
+      severity: 'Critical',
+      title: 'Shell command injection risk',
+      snippet: lineNo !== -1 ? lines[lineNo].trim() : null,
+      line: lineNo !== -1 ? lineNo + 1 : null,
+      cweId: 'CWE-78',
+      explanation: 'User-controlled input is being passed to a shell command or process execution function. An attacker can inject shell metacharacters (;, &&, |, $()) to execute arbitrary commands on the server. This is the OS command injection equivalent of SQL injection. AI models generate this when the specification says "run a command" without requiring input sanitisation.',
+      badCode: lang === 'python'
+        ? "# DANGEROUS: user input injected into shell command\nfilename = request.args['file']\nos.system(f'convert {filename} output.png')"
+        : "// DANGEROUS: user input in shell command\nexec(`convert ${filename} output.png`, callback);",
+      fixCode: lang === 'python'
+        ? "import subprocess\nimport shlex\n\n# Use argument list — never shell=True with user input\nsubprocess.run(\n    ['convert', filename, 'output.png'],\n    check=True,\n    capture_output=True,\n)"
+        : "const { execFile } = require('child_process');\n// Use execFile with argument array, not exec with string\nexecFile('convert', [filename, 'output.png'], callback);",
+      chapter: 'Chapter 13 — The Security Horror Show',
+    });
+  }
+
+  // ── Missing authentication check ───────────────────────────
+  const hasRouteHandler = /app\.(?:get|post|put|delete|patch)\(|@app\.route|router\./i.test(code);
+  const hasAuthCheck = /(?:is_authenticated|current_user|require_auth|@login_required|verify_token|check_permission|authorize|middleware)/i.test(code);
+  if (hasRouteHandler && !hasAuthCheck) {
+    findings.push({
+      severity: 'High',
+      title: 'Route handler may lack authentication check',
+      snippet: null,
+      line: null,
+      cweId: 'CWE-306',
+      explanation: 'A route handler was detected but no authentication verification pattern was found. AI models often generate the business logic for an endpoint without adding auth checks — they implement what was asked for (process this request) without what was implied (but only if the user is authenticated). This is a classic specification gap that automated testing cannot catch without explicit auth tests.',
+      badCode: lang === 'python'
+        ? '@app.route("/admin/users")\ndef list_users():\n    return jsonify(User.query.all())  # no auth check!'
+        : 'app.get("/admin/users", async (req, res) => {\n  const users = await User.findAll(); // no auth check!\n  res.json(users);\n});',
+      fixCode: lang === 'python'
+        ? '@app.route("/admin/users")\n@login_required\n@require_permission("admin")\ndef list_users():\n    return jsonify(User.query.all())'
+        : 'app.get("/admin/users",\n  authenticate,      // verify JWT / session\n  requireRole("admin"),  // check permission\n  async (req, res) => {\n    const users = await User.findAll();\n    res.json(users);\n  }\n);',
+      chapter: 'Chapter 13 — The Security Horror Show',
+    });
+  }
+
+  return findings;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MODULE 3: HALLUCINATION DETECTOR
+═══════════════════════════════════════════════════════════════ */
+function runHallucinationDetector(code, prompt, lang) {
+  const findings = [];
+  const lines = code.split('\n');
+
+  // Known non-existent / hallucinated Python APIs
+  const pythonHallucinations = [
+    {
+      re: /requests\.get_with_retry\s*\(/,
+      api: 'requests.get_with_retry()',
+      reality: 'requests has no built-in retry method. Use requests.Session with HTTPAdapter(max_retries=Retry(...)).',
+      fix: 'from requests.adapters import HTTPAdapter, Retry\n\nsession = requests.Session()\nretry = Retry(total=3, backoff_factor=1)\nsession.mount("http://", HTTPAdapter(max_retries=retry))\nresponse = session.get(url)',
+    },
+    {
+      re: /pd\.DataFrame\.fillna_smart\s*\(/,
+      api: 'DataFrame.fillna_smart()',
+      reality: 'No such pandas method exists. Use fillna(), interpolate(), or ffill()/bfill().',
+      fix: 'df.fillna(method="ffill")  # forward-fill\ndf.interpolate()           # interpolate numeric cols\ndf.fillna(df.mean())       # fill with column mean',
+    },
+    {
+      re: /os\.path\.join_all\s*\(/,
+      api: 'os.path.join_all()',
+      reality: 'No such function exists in os.path. Use os.path.join() with argument unpacking.',
+      fix: 'import os\nparts = ["home", "user", "docs", "file.txt"]\npath = os.path.join(*parts)  # unpack list',
+    },
+    {
+      re: /json\.loads_safe\s*\(/,
+      api: 'json.loads_safe()',
+      reality: 'json has no loads_safe(). Use json.loads() inside a try/except block.',
+      fix: 'import json\ntry:\n    data = json.loads(raw)\nexcept json.JSONDecodeError as e:\n    raise ValueError(f"Invalid JSON: {e}") from e',
+    },
+    {
+      re: /datetime\.now_utc\s*\(/,
+      api: 'datetime.now_utc()',
+      reality: 'No such method. Use datetime.now(timezone.utc) or datetime.utcnow() (deprecated in 3.12).',
+      fix: 'from datetime import datetime, timezone\nnow = datetime.now(timezone.utc)',
+    },
+    {
+      re: /\.filter_by_none\s*\(/,
+      api: '.filter_by_none()',
+      reality: 'Not a SQLAlchemy or Django ORM method. Use filter() with explicit IS NULL conditions.',
+      fix: '# SQLAlchemy:\nresult = session.query(User).filter(User.email == None).all()\n\n# Django:\nresult = User.objects.filter(email__isnull=True)',
+    },
+    {
+      re: /hashlib\.sha256_hex\s*\(/,
+      api: 'hashlib.sha256_hex()',
+      reality: 'No such shorthand. Use hashlib.sha256(data).hexdigest().',
+      fix: 'import hashlib\nhash_value = hashlib.sha256(data.encode()).hexdigest()',
+    },
+  ];
+
+  // Known non-existent JS/TS APIs
+  const jsHallucinations = [
+    {
+      re: /Array\.prototype\.flatten\s*\(/,
+      api: 'Array.prototype.flatten()',
+      reality: 'The method is Array.prototype.flat(), not flatten(). Flatten was the original name, abandoned in the "MooTools incident".',
+      fix: 'const flat = arr.flat();        // one level\nconst deep = arr.flat(Infinity); // all levels',
+    },
+    {
+      re: /Object\.filterKeys\s*\(/,
+      api: 'Object.filterKeys()',
+      reality: 'No such built-in method. Filter object keys using Object.fromEntries() + Object.entries().',
+      fix: 'const filtered = Object.fromEntries(\n  Object.entries(obj).filter(([k]) => allowed.includes(k))\n);',
+    },
+    {
+      re: /Promise\.allWithTimeout\s*\(/,
+      api: 'Promise.allWithTimeout()',
+      reality: 'No such method. Combine Promise.all() with a custom timeout promise.',
+      fix: 'const withTimeout = (promise, ms) =>\n  Promise.race([promise, new Promise((_, rej) =>\n    setTimeout(() => rej(new Error("Timeout")), ms)\n  )]);\n\nawait Promise.all(promises.map(p => withTimeout(p, 5000)));',
+    },
+    {
+      re: /fetch\.postJSON\s*\(/,
+      api: 'fetch.postJSON()',
+      reality: 'fetch has no postJSON() helper. Use fetch() with method: "POST" and JSON.stringify().',
+      fix: 'const res = await fetch(url, {\n  method: "POST",\n  headers: { "Content-Type": "application/json" },\n  body: JSON.stringify(data),\n});\nconst result = await res.json();',
+    },
+    {
+      re: /localStorage\.setWithExpiry\s*\(/,
+      api: 'localStorage.setWithExpiry()',
+      reality: 'localStorage has no built-in expiry. Roll your own or use a library like localforage.',
+      fix: 'function setWithExpiry(key, value, ttlMs) {\n  const item = { value, expiry: Date.now() + ttlMs };\n  localStorage.setItem(key, JSON.stringify(item));\n}',
+    },
+  ];
+
+  const patterns = lang === 'python' || lang === 'java' || lang === 'go'
+    ? pythonHallucinations
+    : jsHallucinations;
+
+  let found = false;
+  for (const { re, api, reality, fix } of patterns) {
+    if (re.test(code)) {
+      found = true;
+      const lineNo = findLine(lines, re);
+      findings.push({
+        severity: 'Critical',
+        title: `Hallucinated API: ${api}`,
+        snippet: lineNo !== -1 ? lines[lineNo].trim() : null,
+        line: lineNo !== -1 ? lineNo + 1 : null,
+        explanation: `The function or method "${api}" does not exist in the standard library or common packages. This is a hallucinated API — the model generated a plausible-looking call based on naming patterns it has seen, but the method was never real. This code will raise AttributeError or TypeError at runtime. ${reality}`,
+        badCode: `# This will crash at runtime:\nresult = ${api.includes('(') ? api : api + '(data)'}`,
+        fixCode: fix,
+        chapter: 'Chapter 2 — How AI Generates Code (and Why It Confidently Lies)',
+      });
+    }
+  }
+
+  // Deprecated API checks
+  const deprecations = lang === 'python' ? [
+    { re: /datetime\.utcnow\(\)/, label: 'datetime.utcnow()', since: '3.12', fix: 'datetime.now(timezone.utc)' },
+    { re: /collections\.Callable/, label: 'collections.Callable', since: '3.10', fix: 'collections.abc.Callable' },
+    { re: /asyncio\.coroutine/, label: '@asyncio.coroutine', since: '3.11 (removed)', fix: 'async def' },
+  ] : [
+    { re: /\.substr\s*\(/, label: 'String.substr()', since: 'deprecated', fix: '.substring() or .slice()' },
+    { re: /escape\s*\(/, label: 'escape()', since: 'deprecated', fix: 'encodeURIComponent()' },
+  ];
+
+  for (const { re, label, since, fix } of deprecations) {
+    if (re.test(code)) {
+      const lineNo = findLine(lines, re);
+      findings.push({
+        severity: 'Medium',
+        title: `Deprecated API: ${label}`,
+        snippet: lineNo !== -1 ? lines[lineNo].trim() : null,
+        line: lineNo !== -1 ? lineNo + 1 : null,
+        explanation: `${label} was deprecated in ${since}. AI models frequently generate deprecated APIs because their training data contains enormous amounts of older code where these were standard. Using deprecated APIs creates maintenance risk and may cause failures in future runtime versions.`,
+        badCode: `# Deprecated — will warn or fail in newer versions:\n${lines.find(l => re.test(l))?.trim() || label}`,
+        fixCode: `# Use instead:\n${fix}`,
+        chapter: 'Chapter 2 — How AI Generates Code (and Why It Confidently Lies)',
+      });
+      break; // one per run is enough
+    }
+  }
+
+  // Wrong parameter count detection (common patterns)
+  const wrongParams = lang === 'python' ? [
+    { re: /sorted\s*\(\s*\w+\s*,\s*\w+\s*\)(?!\s*,\s*key)/, label: 'sorted(iterable, function) — old Python 2 signature' },
+    { re: /open\s*\(\s*\w+\s*\)(?!\s*,\s*["'r])/, label: 'open() without mode — ambiguous' },
+  ] : [];
+
+  for (const { re, label } of wrongParams) {
+    if (re.test(code)) {
+      findings.push({
+        severity: 'Info',
+        title: `Suspicious API usage: ${label}`,
+        snippet: null,
+        line: null,
+        explanation: `This call pattern looks like it may be using an incorrect or ambiguous API signature. AI models sometimes mix API signatures across language versions or subtly misremember argument order.`,
+        badCode: null,
+        fixCode: null,
+        chapter: 'Chapter 2 — How AI Generates Code (and Why It Confidently Lies)',
+      });
+      break;
+    }
+  }
+
+  // If code is non-trivial but no issues found, add info finding
+  if (!found && findings.length === 0 && code.length > 100) {
+    const importedLibs = [...code.matchAll(/import\s+(\w+)|from\s+(\w+)/g)].map(m => m[1]||m[2]);
+    if (importedLibs.length > 0) {
+      findings.push({
+        severity: 'Info',
+        title: 'No hallucinated APIs detected',
+        snippet: null,
+        line: null,
+        explanation: `Libraries detected: ${[...new Set(importedLibs)].join(', ')}. No calls to non-existent methods were found in the checked pattern library. Note: this module checks known hallucination patterns — novel hallucinations not yet in the pattern library will not be detected. Runtime testing against real library versions is always recommended.`,
+        badCode: null,
+        fixCode: null,
+        chapter: 'Chapter 2 — How AI Generates Code (and Why It Confidently Lies)',
+      });
+    }
+  }
+
+  return findings;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════════════════════════ */
+function findLine(lines, pattern) {
+  return lines.findIndex(l => pattern.test(l));
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════════════════════ */
+init();
+</script>
+</body>
+</html>
