@@ -53,8 +53,8 @@ export default function AnalysisDetails({ analysisData, findings }) {
       categoryData: Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value })),
       authorData: Object.entries(authors).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value })),
       avgCommitsPerDay: (commits.length / Math.max(days, 1)).toFixed(1),
-      riskScore: Math.max(0, Math.round(100 - ((sevCounts.Critical * 10) + (sevCounts.High * 5) + (sevCounts.Medium * 2) + (sevCounts.Info * 0.5)) / Math.max(findings.length, 1) * 10)),
-      findingsPerCommit: commits.length > 0 ? (findings.length / commits.length).toFixed(1) : '0',
+      riskScore: Math.max(0, Math.round(100 - ((sevCounts.Critical * 10) + (sevCounts.High * 5) + (sevCounts.Medium * 2)) / Math.max(findings.filter(f => f.severity !== 'Info').length, 1) * 10)),
+      findingsPerCommit: commits.length > 0 ? (findings.filter(f => f.severity !== 'Info').length / commits.length).toFixed(1) : '0',
     }
   }, [commits, findings, days])
 
@@ -94,7 +94,7 @@ export default function AnalysisDetails({ analysisData, findings }) {
     { id: 'overview', label: 'Overview' },
     { id: 'charts', label: 'Charts & Plots' },
     { id: 'ml', label: 'ML Insights' },
-    { id: 'findings', label: `Findings (${findings.length})` },
+    { id: 'findings', label: `Findings (${findings.filter(f => f.severity !== 'Info').length})` },
     { id: 'commits', label: `Commits (${commits.length})` },
     { id: 'recommendations', label: 'Recommendations' },
   ]
@@ -108,7 +108,7 @@ export default function AnalysisDetails({ analysisData, findings }) {
         {[
           { label: 'Commits', value: stats.totalCommits, color: 'text-blue-600' },
           { label: 'Authors', value: stats.uniqueAuthors, color: 'text-indigo-600' },
-          { label: 'Findings', value: findings.length, color: 'text-amber-600' },
+          { label: 'Findings', value: findings.filter(f => f.severity !== 'Info').length, color: 'text-amber-600' },
           { label: 'Critical', value: stats.sevCounts.Critical, color: 'text-red-600' },
           { label: 'Quality Score', value: `${stats.riskScore}/100`, color: stats.riskScore >= 50 ? 'text-emerald-600' : 'text-red-600' },
           { label: 'Findings/Commit', value: stats.findingsPerCommit, color: 'text-gray-700' },

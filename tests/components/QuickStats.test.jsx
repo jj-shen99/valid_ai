@@ -17,12 +17,11 @@ describe('QuickStats', () => {
       { severity: 'Info', id: '5' },
     ]
     const { container } = render(<QuickStats findings={findings} />)
-    // The grid has 5 cards; card[1]=Critical, card[2]=High, card[3]=Medium, card[4]=Info
+    // The grid has 4 cards; card[1]=Critical, card[2]=High, card[3]=Medium (Info removed)
     const cards = container.querySelectorAll('.grid > div')
     expect(cards[1].textContent).toContain('2') // Critical = 2
     expect(cards[2].textContent).toContain('1') // High = 1
     expect(cards[3].textContent).toContain('1') // Medium = 1
-    expect(cards[4].textContent).toContain('1') // Info = 1
   })
 
   it('calculates quality score based on findings', () => {
@@ -42,6 +41,5 @@ describe('QuickStats', () => {
     expect(screen.getByText('Critical')).toBeInTheDocument()
     expect(screen.getByText('High')).toBeInTheDocument()
     expect(screen.getByText('Medium')).toBeInTheDocument()
-    expect(screen.getByText('Info')).toBeInTheDocument()
   })
 })

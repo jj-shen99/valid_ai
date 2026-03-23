@@ -19,11 +19,10 @@ export default function Dashboard({ dark }) {
   const muted = d ? 'text-gray-400' : 'text-gray-500'
 
   // Aggregate findings from all submissions
-  const allFindings = submissions.flatMap(s => s.findings || [])
+  const allFindings = submissions.flatMap(s => s.findings || []).filter(f => f.severity !== 'Info')
   const critical = allFindings.filter(f => f.severity === 'Critical').length
   const high = allFindings.filter(f => f.severity === 'High').length
   const medium = allFindings.filter(f => f.severity === 'Medium').length
-  const info = allFindings.filter(f => f.severity === 'Info').length
   const total = allFindings.length
   const avgScore = submissions.length > 0
     ? Math.round(submissions.reduce((a, s) => a + (s.score || 0), 0) / submissions.length)

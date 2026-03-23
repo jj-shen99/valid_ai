@@ -3,19 +3,19 @@ import { AlertTriangle, AlertCircle, Info, HelpCircle } from 'lucide-react'
 
 export default function QuickStats({ findings, storedScore }) {
   const [showFormula, setShowFormula] = useState(false)
-  const critical = findings.filter(f => f.severity === 'Critical').length
-  const high = findings.filter(f => f.severity === 'High').length
-  const medium = findings.filter(f => f.severity === 'Medium').length
-  const info = findings.filter(f => f.severity === 'Info').length
+  const actionable = findings.filter(f => f.severity !== 'Info')
+  const critical = actionable.filter(f => f.severity === 'Critical').length
+  const high = actionable.filter(f => f.severity === 'High').length
+  const medium = actionable.filter(f => f.severity === 'Medium').length
 
-  const weighted = (critical * 10) + (high * 5) + (medium * 2) + (info * 0.5)
-  const avgPenalty = findings.length > 0 ? weighted / findings.length : 0
-  const calculatedScore = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
+  const weighted = (critical * 10) + (high * 5) + (medium * 2)
+  const avgPenalty = actionable.length > 0 ? weighted / actionable.length : 0
+  const calculatedScore = actionable.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
   const score = storedScore != null ? storedScore : calculatedScore
 
   return (
     <div className="space-y-2">
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
       <div className="bg-white border border-gray-200 rounded-lg p-4 relative">
         <div className="flex items-center gap-1 mb-1">
           <p className="text-xs text-gray-600">Quality Score</p>
@@ -50,22 +50,15 @@ export default function QuickStats({ findings, storedScore }) {
         <p className="text-2xl font-bold text-yellow-600">{medium}</p>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <Info size={16} className="text-blue-600" />
-          <p className="text-xs text-blue-700 font-medium">Info</p>
-        </div>
-        <p className="text-2xl font-bold text-blue-600">{info}</p>
-      </div>
     </div>
 
     {showFormula && (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-700">
         <p className="font-semibold mb-1">Quality Score Formula</p>
         <p className="font-mono text-gray-600 mb-2">Score = max(0, 100 − (avgPenalty × 10))</p>
-        <p className="font-mono text-gray-600 mb-1">avgPenalty = (Critical×10 + High×5 + Medium×2 + Info×0.5) / totalFindings</p>
+        <p className="font-mono text-gray-600 mb-1">avgPenalty = (Critical×10 + High×5 + Medium×2) / totalFindings</p>
         <p className="text-gray-500 mb-1">
-          Your calculation: ({critical}×10 + {high}×5 + {medium}×2 + {info}×0.5) = {weighted} / {findings.length || 1} = {avgPenalty.toFixed(1)} → 100 − {(avgPenalty * 10).toFixed(0)} = <span className="font-semibold">{calculatedScore}%</span>
+          Your calculation: ({critical}×10 + {high}×5 + {medium}×2) = {weighted} / {actionable.length || 1} = {avgPenalty.toFixed(1)} → 100 − {(avgPenalty * 10).toFixed(0)} = <span className="font-semibold">{calculatedScore}%</span>
         </p>
         <div className="flex gap-4 mt-1.5 text-gray-500">
           <span>90–100 Excellent</span>

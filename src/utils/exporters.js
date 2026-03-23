@@ -99,13 +99,13 @@ export const exportAsSARIF = (findings, metadata) => {
 }
 
 export const exportAsHTML = (findings, metadata) => {
-  const critical = findings.filter(f => f.severity === 'Critical').length
-  const high = findings.filter(f => f.severity === 'High').length
-  const medium = findings.filter(f => f.severity === 'Medium').length
-  const info = findings.filter(f => f.severity === 'Info').length
-  const weighted = (critical * 10) + (high * 5) + (medium * 2) + (info * 0.5)
-  const avgPenalty = findings.length > 0 ? weighted / findings.length : 0
-  const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
+  const actionable = findings.filter(f => f.severity !== 'Info')
+  const critical = actionable.filter(f => f.severity === 'Critical').length
+  const high = actionable.filter(f => f.severity === 'High').length
+  const medium = actionable.filter(f => f.severity === 'Medium').length
+  const weighted = (critical * 10) + (high * 5) + (medium * 2)
+  const avgPenalty = actionable.length > 0 ? weighted / actionable.length : 0
+  const score = actionable.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
 
   // Module counts for bar chart
   const moduleCounts = {}
@@ -287,9 +287,10 @@ export const exportGitHubReportAsHTML = (analysisData, findings) => {
     categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
   })
 
-  const weighted = (sevCounts.Critical * 10) + (sevCounts.High * 5) + (sevCounts.Medium * 2) + (sevCounts.Info * 0.5)
-  const avgPenalty = findings.length > 0 ? weighted / findings.length : 0
-  const qualityScore = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
+  const actionableCount = findings.filter(f => f.severity !== 'Info').length
+  const weighted = (sevCounts.Critical * 10) + (sevCounts.High * 5) + (sevCounts.Medium * 2)
+  const avgPenalty = actionableCount > 0 ? weighted / actionableCount : 0
+  const qualityScore = actionableCount === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
   const scoreColor = qualityScore >= 70 ? '#059669' : qualityScore >= 40 ? '#ca8a04' : '#dc2626'
 
   // Authors

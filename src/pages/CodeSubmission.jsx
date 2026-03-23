@@ -76,13 +76,13 @@ export default function CodeSubmission() {
         useStore.getState().addFinding(finding)
       })
 
-      const critical = findings.filter(f => f.severity === 'Critical').length
-      const high = findings.filter(f => f.severity === 'High').length
-      const medium = findings.filter(f => f.severity === 'Medium').length
-      const infoCount = findings.filter(f => f.severity === 'Info').length
-      const weighted = (critical * 10) + (high * 5) + (medium * 2) + (infoCount * 0.5)
-      const avgPenalty = findings.length > 0 ? weighted / findings.length : 0
-      const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
+      const actionable = findings.filter(f => f.severity !== 'Info')
+      const critical = actionable.filter(f => f.severity === 'Critical').length
+      const high = actionable.filter(f => f.severity === 'High').length
+      const medium = actionable.filter(f => f.severity === 'Medium').length
+      const weighted = (critical * 10) + (high * 5) + (medium * 2)
+      const avgPenalty = actionable.length > 0 ? weighted / actionable.length : 0
+      const score = actionable.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
 
       setAnalysisFindings(findings)
       setAnalysisScore(Math.min(100, score))

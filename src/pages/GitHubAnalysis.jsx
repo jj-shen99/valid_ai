@@ -61,13 +61,13 @@ export default function GitHubAnalysis() {
       setLocalFindings(allFindings)
       setGlobalFindings(allFindings)
 
-      const crit = allFindings.filter(f => f.severity === 'Critical').length
-      const hi = allFindings.filter(f => f.severity === 'High').length
-      const med = allFindings.filter(f => f.severity === 'Medium').length
-      const inf = allFindings.filter(f => f.severity === 'Info').length
-      const weighted = (crit * 10) + (hi * 5) + (med * 2) + (inf * 0.5)
-      const avgPenalty = allFindings.length > 0 ? weighted / allFindings.length : 0
-      const score = allFindings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
+      const actionable = allFindings.filter(f => f.severity !== 'Info')
+      const crit = actionable.filter(f => f.severity === 'Critical').length
+      const hi = actionable.filter(f => f.severity === 'High').length
+      const med = actionable.filter(f => f.severity === 'Medium').length
+      const weighted = (crit * 10) + (hi * 5) + (med * 2)
+      const avgPenalty = actionable.length > 0 ? weighted / actionable.length : 0
+      const score = actionable.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
       const submission = {
         code: `GitHub: ${data.owner}/${data.repo} (${data.branch})`,
         language: 'github',

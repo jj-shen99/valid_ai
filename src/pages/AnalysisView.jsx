@@ -103,7 +103,7 @@ export default function AnalysisView({ onNavigate }) {
   const formatLabel = (sub) => {
     const date = new Date(sub.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
     const source = sub.source === 'github' ? `GitHub: ${sub.repo}` : `Code (${sub.language || 'unknown'})`
-    const findingCount = sub.findings?.length ?? 0
+    const findingCount = sub.findings?.filter(f => f.severity !== 'Info').length ?? 0
     return { date, source, findingCount, score: sub.score ?? 0 }
   }
 
@@ -151,7 +151,7 @@ export default function AnalysisView({ onNavigate }) {
                   </div>
                   <div>
                     <p className="text-sm font-medium">Latest Analysis</p>
-                    <p className="text-xs text-gray-500">{liveFindings.length} findings{isRunning ? ' — running' : ''}</p>
+                    <p className="text-xs text-gray-500">{liveFindings.filter(f => f.severity !== 'Info').length} findings{isRunning ? ' — running' : ''}</p>
                   </div>
                 </button>
 
