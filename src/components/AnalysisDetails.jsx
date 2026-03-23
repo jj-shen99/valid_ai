@@ -88,7 +88,7 @@ export default function AnalysisDetails({ analysisData, findings }) {
     return recs
   }, [stats])
 
-  const filteredFindings = severityFilter === 'all' ? findings : findings.filter(f => f.severity === severityFilter)
+  const filteredFindings = severityFilter === 'all' ? findings.filter(f => f.severity !== 'Info') : findings.filter(f => f.severity === severityFilter)
 
   const tabs = [
     { id: 'overview', label: 'Overview' },

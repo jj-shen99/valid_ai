@@ -4,17 +4,6 @@ export const promptTestabilityScore = (code, prompt) => {
   const maxScore = 5
 
   if (!prompt) {
-    findings.push({
-      id: 'prompt-missing',
-      module: 'prompt',
-      moduleName: 'Prompt Testability Score',
-      severity: 'Info',
-      category: 'Prompt not provided',
-      description: 'No generation prompt provided. Testability analysis requires the original prompt.',
-      lineNumber: 1,
-      suggestion: 'Provide the prompt used to generate this code for more accurate testability scoring.',
-      timestamp: new Date().toISOString(),
-    })
     return findings
   }
 
@@ -54,7 +43,7 @@ export const promptTestabilityScore = (code, prompt) => {
         id: `prompt-${check.name}`,
         module: 'prompt',
         moduleName: 'Prompt Testability Score',
-        severity: 'Medium',
+        severity: 'Info',
         category: `Missing: ${check.name}`,
         description: `Prompt does not explicitly mention ${check.name.toLowerCase()}.`,
         lineNumber: 1,

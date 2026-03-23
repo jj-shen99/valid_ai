@@ -95,6 +95,7 @@ export default function AnalysisView({ onNavigate }) {
     const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }
     return (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4)
   })
+  const visibleFindings = sortedFindings.filter(f => f.severity !== 'Info')
 
   const code = useStore((state) => state.code)
   const language = isLive ? useStore.getState().language : (loadedSubmission?.language || 'unknown')
@@ -247,11 +248,11 @@ export default function AnalysisView({ onNavigate }) {
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Findings ({sortedFindings.length})</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Findings ({visibleFindings.length})</h3>
               {isLive && isRunning && <span className="text-sm text-gray-500 flex items-center gap-1"><Loader size={14} className="animate-spin" /> Running...</span>}
             </div>
 
-            {sortedFindings.length === 0 && !isRunning && (
+            {visibleFindings.length === 0 && !isRunning && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3">
                 <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
                 <div>
@@ -265,7 +266,7 @@ export default function AnalysisView({ onNavigate }) {
             )}
 
             <div className="space-y-3">
-              {sortedFindings.map((finding, idx) => (
+              {visibleFindings.map((finding, idx) => (
                 <FindingCard key={finding.id || idx} finding={finding} />
               ))}
             </div>

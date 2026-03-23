@@ -43,11 +43,11 @@ export default function App() {
       {/* ─── Sidebar ─── */}
       <aside className={`${collapsed ? 'w-16' : 'w-56'} flex-shrink-0 ${cls.sidebar} border-r flex flex-col transition-all duration-200`}>
         {/* Logo */}
-        <div className={`h-14 flex items-center ${collapsed ? 'justify-center px-2' : 'px-4'} border-b ${d ? 'border-gray-800' : 'border-gray-200'}`}>
-          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
-            <BarChart3 size={16} className="text-white" />
+        <div className={`flex items-center ${collapsed ? 'justify-center px-2' : 'px-4'} py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white`}>
+          <div className="h-6 w-6 rounded bg-white/20 flex items-center justify-center flex-shrink-0">
+            <BarChart3 size={13} className="text-white" />
           </div>
-          {!collapsed && <span className="ml-3 font-bold text-lg tracking-tight">ValidAI</span>}
+          {!collapsed && <span className="ml-2 font-bold text-sm tracking-tight">ValidAI</span>}
         </div>
 
         {/* Nav links */}
