@@ -10,7 +10,7 @@ const MODULES = [
   { id: 'mutation', name: 'Mutation Scorer', icon: '🧬', desc: 'Boundary operators, boolean negation targets' },
   { id: 'property', name: 'Property Generator', icon: '🎯', desc: 'Function signatures, testability analysis' },
   { id: 'differential', name: 'Differential Runner', icon: '⚖️', desc: 'Versioned functions, algorithm comparison' },
-  { id: 'prompt', name: 'Prompt Testability', icon: '�', desc: 'Edge cases, constraints, error semantics' },
+
   { id: 'aiReview', name: 'AI Review Assistant', icon: '🤖', desc: 'Claude-powered anti-pattern detection' },
 ]
 

@@ -1,7 +1,5 @@
 import React from 'react'
-import { Trash2, Eye } from 'lucide-react'
-
-export default function SubmissionHistory({ submissions, onSelect, onDelete }) {
+export default function SubmissionHistory({ submissions }) {
   if (submissions.length === 0) {
     return (
       <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
@@ -20,7 +18,6 @@ export default function SubmissionHistory({ submissions, onSelect, onDelete }) {
               <th className="px-4 py-3 text-left font-semibold text-gray-900">Source</th>
               <th className="px-4 py-3 text-left font-semibold text-gray-900">Score</th>
               <th className="px-4 py-3 text-left font-semibold text-gray-900">Modules</th>
-              <th className="px-4 py-3 text-right font-semibold text-gray-900">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -41,24 +38,6 @@ export default function SubmissionHistory({ submissions, onSelect, onDelete }) {
                 </td>
                 <td className="px-4 py-3 text-gray-700 text-xs">
                   {submission.modules.length} modules
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => onSelect(submission)}
-                      className="p-1 text-blue-600 hover:bg-blue-50 rounded"
-                      title="View details"
-                    >
-                      <Eye size={16} />
-                    </button>
-                    <button
-                      onClick={() => onDelete(idx)}
-                      className="p-1 text-red-600 hover:bg-red-50 rounded"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
                 </td>
               </tr>
             ))}

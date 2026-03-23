@@ -6,24 +6,10 @@ export const mutationScorer = (code, language) => {
   const mutationTargets = [
     {
       name: 'Boundary comparison operator',
-      regex: /[<>]=?\s*\d+|[<>]=?\s*\w+\.(?:length|size|count)/,
+      regex: /(?:if|while|for)\s*\(.*[<>]=?\s*\d+|[<>]=?\s*\w+\.(?:length|size|count)/,
       severity: 'Medium',
       description: 'Boundary comparisons are prime mutation targets — changing < to <= or > to >= can introduce subtle bugs.',
       suggestion: 'Write boundary tests: test exact boundary value, one below, and one above. These catch operator-swap mutations.',
-    },
-    {
-      name: 'Arithmetic operator',
-      regex: /[+\-*/]\s*(?:\d+|\w+)(?:\s*[;,)\]])/,
-      severity: 'Info',
-      description: 'Arithmetic operations are mutation targets — swapping +/- or */÷ can silently change results.',
-      suggestion: 'Add property-based tests verifying mathematical invariants (e.g., inverse operations, commutative properties).',
-    },
-    {
-      name: 'Boolean negation target',
-      regex: /!\s*\w+|&&|\|\||!==?|===?/,
-      severity: 'Info',
-      description: 'Boolean logic is a high-value mutation target — negating conditions can flip control flow entirely.',
-      suggestion: 'Test both true and false branches. Ensure test coverage includes every conditional path.',
     },
     {
       name: 'Return value mutation risk',
@@ -34,29 +20,38 @@ export const mutationScorer = (code, language) => {
     },
     {
       name: 'Conditional branch without else',
-      regex: /if\s*\(.*\)\s*\{[^}]*\}\s*$/,
+      regex: /^\s*if\s*\(.*\)\s*\{?\s*$/,
       severity: 'Medium',
       description: 'Missing else branch means mutations removing the if-body may survive undetected.',
       suggestion: 'Test the case where the condition is false. Ensure the default path behavior is verified.',
     },
   ]
 
+  // Track first occurrence per pattern to avoid flooding
+  const seenPatterns = {}
   let targetCount = 0
+
   lines.forEach((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) return
+
     mutationTargets.forEach((target) => {
       if (target.regex.test(line)) {
         targetCount++
-        findings.push({
-          id: `mut-${idx}-${target.name}`,
-          module: 'mutation',
-          moduleName: 'Mutation Scorer',
-          severity: target.severity,
-          category: target.name,
-          description: target.description,
-          lineNumber: idx + 1,
-          suggestion: target.suggestion,
-          timestamp: new Date().toISOString(),
-        })
+        if (!seenPatterns[target.name]) {
+          seenPatterns[target.name] = true
+          findings.push({
+            id: `mut-${idx}-${target.name}`,
+            module: 'mutation',
+            moduleName: 'Mutation Scorer',
+            severity: target.severity,
+            category: target.name,
+            description: target.description,
+            lineNumber: idx + 1,
+            suggestion: target.suggestion,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     })
   })

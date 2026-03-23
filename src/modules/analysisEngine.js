@@ -6,7 +6,6 @@ import { complexityProfiler } from './complexityProfiler'
 import { differentialRunner } from './differentialRunner'
 import { oracleChecker } from './oracleChecker'
 import { mutationScorer } from './mutationScorer'
-import { promptTestabilityScore } from './promptTestability'
 import { aiReviewAssistant } from './aiReviewAssistant'
 
 const MODULE_REGISTRY = {
@@ -18,7 +17,6 @@ const MODULE_REGISTRY = {
   differential: differentialRunner,
   oracle: oracleChecker,
   mutation: mutationScorer,
-  prompt: promptTestabilityScore,
   aiReview: aiReviewAssistant,
 }
 
@@ -30,9 +28,7 @@ export const runAnalysis = async (code, language, selectedModules, prompt = '', 
     if (moduleFunc) {
       try {
         let moduleFindings
-        if (moduleName === 'prompt') {
-          moduleFindings = moduleFunc(code, prompt)
-        } else if (moduleName === 'aiReview') {
+        if (moduleName === 'aiReview') {
           moduleFindings = await moduleFunc(code, language, apiKey)
         } else {
           moduleFindings = moduleFunc(code, language)
@@ -100,12 +96,7 @@ export const getModuleInfo = (moduleName) => {
       description: 'Scores mutation testing susceptibility: boundary operators, boolean negation targets, return value mutations, and conditional branches.',
       estimatedTime: '~5s',
     },
-    prompt: {
-      name: 'Prompt Testability',
-      icon: '📝',
-      description: 'Evaluates AI prompt quality for testability: checks for edge cases, constraints, error semantics, dependency injection, and pure functions.',
-      estimatedTime: '~2s',
-    },
+
     aiReview: {
       name: 'AI Review Assistant',
       icon: '🤖',

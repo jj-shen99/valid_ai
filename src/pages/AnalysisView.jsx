@@ -15,7 +15,7 @@ const MODULES = {
   mutation: { name: 'Mutation Scorer', icon: '🧬', desc: 'Identifies boundary operators, boolean negation targets, and arithmetic mutation points to assess how well test suites can catch semantic changes.' },
   property: { name: 'Property Generator', icon: '🎯', desc: 'Analyzes function signatures and structure to suggest property-based tests, invariants, and testability improvements.' },
   differential: { name: 'Differential Runner', icon: '⚖️', desc: 'Detects versioned functions and algorithm alternatives to enable comparison testing between different implementations.' },
-  prompt: { name: 'Prompt Testability', icon: '📝', desc: 'Evaluates prompt structure for edge cases, constraint coverage, error semantics, and ambiguity that could affect AI code generation quality.' },
+
   aiReview: { name: 'AI Review Assistant', icon: '🤖', desc: 'Uses Claude API for deep anti-pattern detection, architectural review, and context-aware suggestions beyond regex-based analysis.' },
 }
 

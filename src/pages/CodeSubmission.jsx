@@ -34,7 +34,7 @@ const TEST_PROFILES = [
     id: 'full',
     name: 'Full Audit',
     description: 'All modules',
-    modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'prompt', 'aiReview'],
+    modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'aiReview'],
   },
 ]
 
