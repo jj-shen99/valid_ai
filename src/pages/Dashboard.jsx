@@ -39,7 +39,6 @@ export default function Dashboard({ dark }) {
     { label: 'Critical', count: critical, color: 'bg-red-500', max: Math.max(total, 1) },
     { label: 'High', count: high, color: 'bg-orange-500', max: Math.max(total, 1) },
     { label: 'Medium', count: medium, color: 'bg-yellow-500', max: Math.max(total, 1) },
-    { label: 'Info', count: info, color: 'bg-blue-400', max: Math.max(total, 1) },
   ]
 
   const modules = [
@@ -51,7 +50,6 @@ export default function Dashboard({ dark }) {
     { name: 'Differential Runner', status: true },
     { name: 'Oracle Checker', status: true },
     { name: 'Mutation Scorer', status: true },
-    { name: 'Prompt Testability', status: true },
     { name: 'AI Review Assistant', status: false },
   ]
 
