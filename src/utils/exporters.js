@@ -107,23 +107,22 @@ export const exportAsHTML = (findings, metadata) => {
   const avgPenalty = actionable.length > 0 ? weighted / actionable.length : 0
   const score = actionable.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
 
-  // Module counts for bar chart
+  // Module counts for bar chart (actionable findings only)
   const moduleCounts = {}
-  findings.forEach(f => {
+  actionable.forEach(f => {
     const m = f.moduleName || f.module || 'Unknown'
     moduleCounts[m] = (moduleCounts[m] || 0) + 1
   })
   const moduleEntries = Object.entries(moduleCounts).sort((a, b) => b[1] - a[1])
   const maxModuleCount = Math.max(...moduleEntries.map(e => e[1]), 1)
 
-  // Pie chart data
+  // Pie chart data (actionable findings only)
   const pieData = [
     { label: 'Critical', count: critical, color: '#ef4444' },
     { label: 'High', count: high, color: '#f97316' },
     { label: 'Medium', count: medium, color: '#eab308' },
-    { label: 'Info', count: info, color: '#3b82f6' },
   ].filter(d => d.count > 0)
-  const total = findings.length || 1
+  const total = actionable.length || 1
 
   // Generate SVG pie chart
   let pieSlices = ''
@@ -167,16 +166,16 @@ export const exportAsHTML = (findings, metadata) => {
   const scoreColor = score >= 80 ? '#059669' : score >= 50 ? '#ca8a04' : '#dc2626'
   const timestamp = new Date().toLocaleString()
 
-  const findingsRows = findings.map((f, i) => `
+  const findingsRows = actionable.map((f, i) => `
     <tr style="border-bottom:1px solid #e5e7eb;">
       <td style="padding:8px 12px;font-size:13px;">${i + 1}</td>
       <td style="padding:8px 12px;"><span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;color:#fff;background:${
-        f.severity === 'Critical' ? '#ef4444' : f.severity === 'High' ? '#f97316' : f.severity === 'Medium' ? '#eab308' : '#3b82f6'
+        f.severity === 'Critical' ? '#ef4444' : f.severity === 'High' ? '#f97316' : '#eab308'
       };">${f.severity}</span></td>
       <td style="padding:8px 12px;font-size:13px;font-weight:500;">${f.category || ''}</td>
       <td style="padding:8px 12px;font-size:13px;color:#6b7280;">${f.moduleName || f.module || ''}</td>
       <td style="padding:8px 12px;font-size:13px;">${f.description || ''}</td>
-      <td style="padding:8px 12px;font-size:13px;color:#6b7280;">${f.lineNumber || '-'}</td>
+      <td style="padding:8px 12px;font-size:13px;">${f.lineNumber || '-'}</td>
       <td style="padding:8px 12px;font-size:12px;color:#4b5563;">${f.suggestion || ''}</td>
     </tr>
   `).join('')
@@ -218,7 +217,7 @@ export const exportAsHTML = (findings, metadata) => {
       <div class="card">
         <h3>Quality Score</h3>
         <div class="value" style="color:${scoreColor};">${score}%</div>
-        <p style="font-size:11px;color:#9ca3af;margin-top:4px;">100 − (C×10 + H×5 + M×2 + I×0.5)</p>
+        <p style="font-size:11px;color:#9ca3af;margin-top:4px;">100 − (C×10 + H×5 + M×2)</p>
       </div>
       <div class="card">
         <h3>Critical</h3>
@@ -229,9 +228,8 @@ export const exportAsHTML = (findings, metadata) => {
         <div class="value" style="color:#f97316;">${high}</div>
       </div>
       <div class="card">
-        <h3>Medium / Info</h3>
+        <h3>Medium</h3>
         <div class="value" style="color:#eab308;">${medium}</div>
-        <p style="font-size:13px;color:#3b82f6;margin-top:2px;">+ ${info} info</p>
       </div>
     </div>
 
@@ -251,8 +249,8 @@ export const exportAsHTML = (findings, metadata) => {
     </div>
 
     <div class="card" style="margin-top:24px;">
-      <p class="section-title">All Findings (${findings.length})</p>
-      ${findings.length === 0 ? '<p style="font-size:13px;color:#9ca3af;">No findings detected — code looks clean.</p>' :
+      <p class="section-title">All Findings (${actionable.length})</p>
+      ${actionable.length === 0 ? '<p style="font-size:13px;color:#9ca3af;">No findings detected — code looks clean.</p>' :
       `<div style="overflow-x:auto;"><table>
         <thead><tr>
           <th>#</th><th>Severity</th><th>Category</th><th>Module</th><th>Description</th><th>Line</th><th>Suggestion</th>
@@ -275,11 +273,12 @@ export const exportAsHTML = (findings, metadata) => {
 export const exportGitHubReportAsHTML = (analysisData, findings) => {
   const { owner, repo, branch, days, commits, period } = analysisData
 
-  // Severity counts
-  const sevCounts = { Critical: 0, High: 0, Medium: 0, Info: 0 }
+  // Severity counts (actionable findings only)
+  const actionableFindings = findings.filter(f => f.severity !== 'Info')
+  const sevCounts = { Critical: 0, High: 0, Medium: 0 }
   const moduleCounts = {}
   const categoryCounts = {}
-  findings.forEach(f => {
+  actionableFindings.forEach(f => {
     sevCounts[f.severity] = (sevCounts[f.severity] || 0) + 1
     const mod = f.moduleName || f.module || 'Unknown'
     moduleCounts[mod] = (moduleCounts[mod] || 0) + 1
@@ -287,10 +286,9 @@ export const exportGitHubReportAsHTML = (analysisData, findings) => {
     categoryCounts[cat] = (categoryCounts[cat] || 0) + 1
   })
 
-  const actionableCount = findings.filter(f => f.severity !== 'Info').length
   const weighted = (sevCounts.Critical * 10) + (sevCounts.High * 5) + (sevCounts.Medium * 2)
-  const avgPenalty = actionableCount > 0 ? weighted / actionableCount : 0
-  const qualityScore = actionableCount === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
+  const avgPenalty = actionableFindings.length > 0 ? weighted / actionableFindings.length : 0
+  const qualityScore = actionableFindings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
   const scoreColor = qualityScore >= 70 ? '#059669' : qualityScore >= 40 ? '#ca8a04' : '#dc2626'
 
   // Authors
@@ -306,14 +304,13 @@ export const exportGitHubReportAsHTML = (analysisData, findings) => {
   const authorEntries = Object.entries(authors).sort((a, b) => b[1] - a[1])
   const dailyEntries = Object.entries(dailyMap)
 
-  // SVG pie chart for severity
+  // SVG pie chart for severity (actionable findings only)
   const pieData = [
     { label: 'Critical', count: sevCounts.Critical, color: '#ef4444' },
     { label: 'High', count: sevCounts.High, color: '#f97316' },
     { label: 'Medium', count: sevCounts.Medium, color: '#eab308' },
-    { label: 'Info', count: sevCounts.Info, color: '#3b82f6' },
   ].filter(d => d.count > 0)
-  const total = findings.length || 1
+  const total = actionableFindings.length || 1
   let pieSlices = '', cumAngle = 0
   pieData.forEach(d => {
     const angle = (d.count / total) * 360
@@ -380,8 +377,8 @@ export const exportGitHubReportAsHTML = (analysisData, findings) => {
   const catEntries = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 8)
   const catHTML = catEntries.map(([name, count]) => `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:12px;"><span>${name}</span><span style="font-weight:600;">${count}</span></div>`).join('')
 
-  // Findings table
-  const findingsRows = findings.map((f, i) => `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:6px 10px;font-size:12px;">${i + 1}</td><td style="padding:6px 10px;"><span style="display:inline-block;padding:1px 7px;border-radius:9999px;font-size:10px;font-weight:600;color:#fff;background:${f.severity === 'Critical' ? '#ef4444' : f.severity === 'High' ? '#f97316' : f.severity === 'Medium' ? '#eab308' : '#3b82f6'};">${f.severity}</span></td><td style="padding:6px 10px;font-size:12px;font-weight:500;">${f.category || ''}</td><td style="padding:6px 10px;font-size:12px;color:#6b7280;">${f.moduleName || f.module || ''}</td><td style="padding:6px 10px;font-size:12px;">${f.description || ''}</td><td style="padding:6px 10px;font-size:11px;color:#4b5563;">${f.suggestion || ''}</td></tr>`).join('')
+  // Findings table (actionable findings only)
+  const findingsRows = actionableFindings.map((f, i) => `<tr style="border-bottom:1px solid #e5e7eb;"><td style="padding:6px 10px;font-size:12px;">${i + 1}</td><td style="padding:6px 10px;"><span style="display:inline-block;padding:1px 7px;border-radius:9999px;font-size:10px;font-weight:600;color:#fff;background:${f.severity === 'Critical' ? '#ef4444' : f.severity === 'High' ? '#f97316' : '#eab308'};">${f.severity}</span></td><td style="padding:6px 10px;font-size:12px;font-weight:500;">${f.category || ''}</td><td style="padding:6px 10px;font-size:12px;color:#6b7280;">${f.moduleName || f.module || ''}</td><td style="padding:6px 10px;font-size:12px;">${f.description || ''}</td><td style="padding:6px 10px;font-size:11px;color:#4b5563;">${f.suggestion || ''}</td></tr>`).join('')
 
   const timestamp = new Date().toLocaleString()
 
@@ -466,8 +463,8 @@ th{padding:6px 10px;text-align:left;font-size:10px;text-transform:uppercase;lett
 </div>
 
 <div class="cd" style="margin-bottom:20px;">
-  <p class="st">All Findings (${findings.length})</p>
-  ${findings.length === 0 ? '<p style="font-size:12px;color:#9ca3af;">No findings — code looks clean.</p>' :
+  <p class="st">All Findings (${actionableFindings.length})</p>
+  ${actionableFindings.length === 0 ? '<p style="font-size:12px;color:#9ca3af;">No findings — code looks clean.</p>' :
   `<div style="overflow-x:auto;"><table><thead><tr><th>#</th><th>Severity</th><th>Category</th><th>Module</th><th>Description</th><th>Suggestion</th></tr></thead><tbody>${findingsRows}</tbody></table></div>`}
 </div>
 

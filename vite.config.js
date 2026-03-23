@@ -9,7 +9,7 @@ export default defineConfig({
     middlewareMode: false
   },
   build: {
-    outDir: 'build/dist',
+    outDir: 'dist',
     sourcemap: false
   },
   test: {
