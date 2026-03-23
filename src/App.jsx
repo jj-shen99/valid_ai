@@ -6,7 +6,8 @@ import AnalysisView from './pages/AnalysisView'
 import Settings from './pages/Settings'
 import TrendHistory from './pages/TrendHistory'
 import Tutorials from './pages/Tutorials'
-import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, BookOpen } from 'lucide-react'
+import GitHubAnalysis from './pages/GitHubAnalysis'
+import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, BookOpen, Github } from 'lucide-react'
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
@@ -57,6 +58,17 @@ export default function App() {
                 Trends
               </button>
               <button
+                onClick={() => setCurrentPage('github')}
+                className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
+                  currentPage === 'github'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                <Github size={18} />
+                GitHub
+              </button>
+              <button
                 onClick={() => setCurrentPage('tutorials')}
                 className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
                   currentPage === 'tutorials'
@@ -87,6 +99,7 @@ export default function App() {
         {currentPage === 'dashboard' && <Dashboard />}
         {currentPage === 'submit' && <CodeSubmission />}
         {currentPage === 'trends' && <TrendHistory />}
+        {currentPage === 'github' && <GitHubAnalysis />}
         {currentPage === 'tutorials' && <Tutorials />}
         {currentPage === 'settings' && <Settings />}
       </main>
