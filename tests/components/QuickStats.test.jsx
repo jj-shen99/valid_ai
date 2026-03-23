@@ -31,9 +31,9 @@ describe('QuickStats', () => {
       { severity: 'High', id: '2' },
     ]
     const { container } = render(<QuickStats findings={findings} />)
-    // Score = max(0, round(100 - (15/2))) = round(92.5) = 93
+    // Score = max(0, 100 - (10 + 5)) = 85
     const cards = container.querySelectorAll('.grid > div')
-    expect(cards[0].textContent).toContain('93%')
+    expect(cards[0].textContent).toContain('85%')
   })
 
   it('renders all stat labels', () => {

@@ -59,12 +59,12 @@ export default function Dashboard({ dark }) {
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white flex items-start justify-between">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 -mx-6 px-6 py-3 text-white flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold mb-1">Dashboard</h2>
-          <p className="text-emerald-100 text-sm">Overview of your code quality metrics, findings, and module status</p>
+          <h2 className="text-base font-bold">Dashboard</h2>
+          <p className="text-emerald-100 text-xs">Overview of your code quality metrics, findings, and module status</p>
         </div>
-        <span className="text-xs text-emerald-200 whitespace-nowrap ml-4 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+        <span className="text-xs text-emerald-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
       </div>
 
       {/* KPI Cards */}

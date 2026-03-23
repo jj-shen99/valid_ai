@@ -109,12 +109,12 @@ export default function AnalysisView({ onNavigate }) {
   return (
     <div className="space-y-6">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-5 text-white flex items-start justify-between">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 -mx-6 px-6 py-3 text-white flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold mb-1">Analysis Results</h2>
-          <p className="text-indigo-100 text-sm">Review findings from past and current analyses across all modules</p>
+          <h2 className="text-base font-bold">Analysis Results</h2>
+          <p className="text-indigo-100 text-xs">Review findings from past and current analyses across all modules</p>
         </div>
-        <span className="text-xs text-indigo-200 whitespace-nowrap ml-4 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+        <span className="text-xs text-indigo-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
       </div>
 
       <div className="flex items-end justify-end">
@@ -208,9 +208,7 @@ export default function AnalysisView({ onNavigate }) {
               </p>
             </div>
           </div>
-          <button onClick={handleSwitchToLive} className="text-xs font-medium text-indigo-700 hover:text-indigo-900 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors">
-            Switch to Live
-          </button>
+          
         </div>
       )}
 

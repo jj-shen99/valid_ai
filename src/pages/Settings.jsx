@@ -37,12 +37,12 @@ export default function Settings() {
   return (
     <div className="max-w-2xl space-y-6">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-slate-700 to-slate-500 rounded-xl p-5 text-white flex items-start justify-between">
+      <div className="bg-gradient-to-r from-slate-700 to-slate-500 -mx-6 px-6 py-3 text-white flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold mb-1">Settings</h2>
-          <p className="text-slate-200 text-sm">Manage API keys, authentication, and application data</p>
+          <h2 className="text-base font-bold">Settings</h2>
+          <p className="text-slate-200 text-xs">Manage API keys, authentication, and application data</p>
         </div>
-        <span className="text-xs text-slate-300 whitespace-nowrap ml-4 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+        <span className="text-xs text-slate-300 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
       </div>
 
       {/* Claude API Key */}

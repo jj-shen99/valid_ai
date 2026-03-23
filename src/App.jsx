@@ -89,7 +89,7 @@ export default function App() {
       {/* ─── Main Area ─── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-6">
+        <main className="flex-1 overflow-y-auto px-6 pb-6">
           {page === 'dashboard' && <Dashboard dark={dark} />}
           {page === 'submit' && <CodeSubmission />}
           {page === 'analysis' && <AnalysisView onNavigate={setPage} />}

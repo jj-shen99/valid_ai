@@ -82,12 +82,12 @@ export default function TrendHistory() {
   return (
     <div className="space-y-6">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-5 text-white flex items-start justify-between">
+      <div className="bg-gradient-to-r from-amber-500 to-orange-500 -mx-6 px-6 py-3 text-white flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold mb-1">Trends & History</h2>
-          <p className="text-amber-100 text-sm">Track code quality improvements, finding patterns, and analysis history over time</p>
+          <h2 className="text-base font-bold">Trends & History</h2>
+          <p className="text-amber-100 text-xs">Track code quality improvements, finding patterns, and analysis history over time</p>
         </div>
-        <span className="text-xs text-amber-200 whitespace-nowrap ml-4 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+        <span className="text-xs text-amber-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
       </div>
 
       {/* KPI Cards */}
