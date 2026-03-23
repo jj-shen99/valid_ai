@@ -47,7 +47,6 @@ export const failureModeScanner = (code, language) => {
           description: `Detected potential ${pattern.name.toLowerCase()} pattern in code.`,
           lineNumber: idx + 1,
           suggestion: `Review this line for correctness. Consider adding explicit checks and error handling.`,
-          chapterLink: pattern.chapter,
           timestamp: new Date().toISOString(),
         })
       }

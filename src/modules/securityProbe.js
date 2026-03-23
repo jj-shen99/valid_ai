@@ -59,7 +59,6 @@ export const securityProbe = (code, language) => {
           description: `Security vulnerability detected: ${pattern.name}. ${pattern.owasp}`,
           lineNumber: idx + 1,
           suggestion: `Review this code for security implications. Use parameterized queries, secure cryptography, and proper input validation.`,
-          chapterLink: pattern.chapter,
           timestamp: new Date().toISOString(),
         })
       }

@@ -52,7 +52,6 @@ export const complexityProfiler = (code, language) => {
           description: `Detected potential performance issue: ${pattern.name}`,
           lineNumber: idx + 1,
           suggestion: pattern.suggestion,
-          chapterLink: pattern.chapter,
           timestamp: new Date().toISOString(),
         })
       }

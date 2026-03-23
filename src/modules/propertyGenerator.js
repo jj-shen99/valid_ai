@@ -21,7 +21,6 @@ export const propertyGenerator = (code, language) => {
           description: `Function ${funcName} appears to be pure with no parameters. Consider adding property-based tests.`,
           lineNumber: idx + 1,
           suggestion: `Generate property tests for ${funcName} using Hypothesis (Python) or fast-check (JS). Test invariants and round-trip properties.`,
-          chapterLink: 'Ch 7',
           timestamp: new Date().toISOString(),
         })
       }
@@ -36,7 +35,6 @@ export const propertyGenerator = (code, language) => {
           description: `Function ${funcName} has ${params.length} parameters. Consider dependency injection for testability.`,
           lineNumber: idx + 1,
           suggestion: `Refactor to accept a configuration object or use dependency injection. This improves testability and property-based test generation.`,
-          chapterLink: 'Ch 7',
           timestamp: new Date().toISOString(),
         })
       }

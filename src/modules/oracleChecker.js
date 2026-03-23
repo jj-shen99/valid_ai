@@ -10,7 +10,6 @@ export const oracleChecker = (code, language) => {
     description: 'Oracle Checker requires a specification to validate code behavior against.',
     lineNumber: 1,
     suggestion: 'Provide a specification in plain English or JSON schema format. This enables comparison of code behavior against stated requirements.',
-    chapterLink: 'Ch 4',
     timestamp: new Date().toISOString(),
   })
 

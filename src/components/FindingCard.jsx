@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
-import { ChevronDown, ChevronUp, Copy, ExternalLink } from 'lucide-react'
-import { ChapterLink } from '../utils/chapterLinks.jsx'
+import { ChevronDown, ChevronUp, Copy } from 'lucide-react'
 
 const severityColors = {
   Critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', badge: 'bg-red-100 text-red-800' },
@@ -60,12 +59,6 @@ export default function FindingCard({ finding }) {
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            <ChapterLink chapter={finding.chapterLink}>
-              <span className="flex items-center gap-1">
-                {finding.chapterLink}
-                <ExternalLink size={12} />
-              </span>
-            </ChapterLink>
             <span className="text-xs text-gray-500">
               {new Date(finding.timestamp).toLocaleTimeString()}
             </span>

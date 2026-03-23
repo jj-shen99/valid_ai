@@ -10,7 +10,6 @@ export const mutationScorer = (code, language) => {
     description: 'Mutation Scorer requires an existing test suite to evaluate.',
     lineNumber: 1,
     suggestion: 'Provide your test suite alongside the code. Mutation Scorer will apply semantic mutations and report what percentage your tests catch.',
-    chapterLink: 'Ch 7/10',
     timestamp: new Date().toISOString(),
   })
 

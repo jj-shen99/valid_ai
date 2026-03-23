@@ -11,7 +11,6 @@ export const aiReviewAssistant = async (code, language, apiKey) => {
       description: 'AI Review Assistant requires a Claude API key to function.',
       lineNumber: 1,
       suggestion: 'Add your Claude API key in Settings to enable AI-powered code review.',
-      chapterLink: 'Ch 11',
       timestamp: new Date().toISOString(),
     })
     return findings
@@ -54,7 +53,6 @@ Return ONLY valid JSON array, no other text.`,
         description: 'Could not reach Claude API. Check your API key and internet connection.',
         lineNumber: 1,
         suggestion: 'Verify your API key is valid and has sufficient quota.',
-        chapterLink: 'Ch 11',
         timestamp: new Date().toISOString(),
       })
       return findings
@@ -75,7 +73,6 @@ Return ONLY valid JSON array, no other text.`,
           description: f.explanation || '',
           lineNumber: 1,
           suggestion: f.fix || 'Review the code and apply the suggested fix.',
-          chapterLink: 'Ch 11',
           timestamp: new Date().toISOString(),
         }))
       }
@@ -89,7 +86,6 @@ Return ONLY valid JSON array, no other text.`,
         description: 'AI response could not be parsed. Manual review recommended.',
         lineNumber: 1,
         suggestion: 'Check the raw API response or try again.',
-        chapterLink: 'Ch 11',
         timestamp: new Date().toISOString(),
       })
     }
@@ -103,7 +99,6 @@ Return ONLY valid JSON array, no other text.`,
       description: `Error calling Claude API: ${error.message}`,
       lineNumber: 1,
       suggestion: 'Check your internet connection and API key.',
-      chapterLink: 'Ch 11',
       timestamp: new Date().toISOString(),
     })
   }

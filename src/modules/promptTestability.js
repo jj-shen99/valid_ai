@@ -13,7 +13,6 @@ export const promptTestabilityScore = (code, prompt) => {
       description: 'No generation prompt provided. Testability analysis requires the original prompt.',
       lineNumber: 1,
       suggestion: 'Provide the prompt used to generate this code for more accurate testability scoring.',
-      chapterLink: 'Ch 6',
       timestamp: new Date().toISOString(),
     })
     return findings
@@ -60,7 +59,6 @@ export const promptTestabilityScore = (code, prompt) => {
         description: `Prompt does not explicitly mention ${check.name.toLowerCase()}.`,
         lineNumber: 1,
         suggestion: `Improve prompt clarity by explicitly specifying ${check.name.toLowerCase()} requirements.`,
-        chapterLink: 'Ch 6',
         timestamp: new Date().toISOString(),
       })
     }
@@ -77,7 +75,6 @@ export const promptTestabilityScore = (code, prompt) => {
     description: `Prompt testability score: ${testabilityPercent}%. ${score}/${maxScore} criteria met.`,
     lineNumber: 1,
     suggestion: `Focus on improving prompt clarity for untested criteria. Better prompts lead to more testable code.`,
-    chapterLink: 'Ch 6',
     timestamp: new Date().toISOString(),
   })
 

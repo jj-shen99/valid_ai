@@ -46,7 +46,6 @@ export const hallucinationDetector = (code, language) => {
           description: `Detected call to potentially non-existent method: ${obj}.${method}()`,
           lineNumber: idx + 1,
           suggestion: `Verify that ${method} is a valid method on ${obj}. Check the official documentation for the correct API.`,
-          chapterLink: 'Ch 2',
           timestamp: new Date().toISOString(),
         })
       }
