@@ -11,7 +11,7 @@ import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, Github
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'submit', label: 'Submit Code', icon: FileText },
-  { id: 'github', label: 'GitHub Analysis', icon: Github },
+  { id: 'github', label: 'GitHub Repo Analysis', icon: Github },
   { id: 'analysis', label: 'Analysis Results', icon: BarChart3 },
   { id: 'trends', label: 'Trends', icon: TrendingUp },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
@@ -88,13 +88,6 @@ export default function App() {
 
       {/* ─── Main Area ─── */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <header className={`h-14 flex-shrink-0 flex items-center justify-end px-6 border-b backdrop-blur-sm ${cls.header}`}>
-          <span className={`text-xs ${cls.muted}`}>
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
-          </span>
-        </header>
-
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-6">
           {page === 'dashboard' && <Dashboard dark={dark} />}

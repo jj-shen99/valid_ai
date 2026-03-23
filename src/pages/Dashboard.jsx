@@ -1,9 +1,18 @@
 import React from 'react'
 import { useStore } from '../store'
-import { TrendingUp, AlertTriangle, Shield, Bug, Zap, FileText, CheckCircle, XCircle } from 'lucide-react'
+import { TrendingUp, AlertTriangle, Shield, Bug, Zap, FileText, CheckCircle, XCircle, Trash2 } from 'lucide-react'
 
 export default function Dashboard({ dark }) {
   const submissions = useStore((s) => s.submissions)
+  const addNotification = useStore((s) => s.addNotification)
+
+  const handleDeleteSubmission = (index) => {
+    if (window.confirm('Delete this submission?')) {
+      const updated = submissions.filter((_, i) => i !== index)
+      useStore.setState({ submissions: updated })
+      addNotification('Submission deleted', 'info')
+    }
+  }
 
   const d = dark
   const card = d ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
@@ -50,9 +59,12 @@ export default function Dashboard({ dark }) {
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white">
-        <h2 className="text-xl font-bold mb-1">Dashboard</h2>
-        <p className="text-emerald-100 text-sm">Overview of your code quality metrics, findings, and module status</p>
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-bold mb-1">Dashboard</h2>
+          <p className="text-emerald-100 text-sm">Overview of your code quality metrics, findings, and module status</p>
+        </div>
+        <span className="text-xs text-emerald-200 whitespace-nowrap ml-4 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
       </div>
 
       {/* KPI Cards */}
@@ -135,6 +147,7 @@ export default function Dashboard({ dark }) {
                   <th className="pb-2 font-medium">Modules</th>
                   <th className="pb-2 font-medium">Score</th>
                   <th className="pb-2 font-medium">Date</th>
+                  <th className="pb-2 font-medium w-10"></th>
                 </tr>
               </thead>
               <tbody>
@@ -152,6 +165,15 @@ export default function Dashboard({ dark }) {
                       </span>
                     </td>
                     <td className={`py-2.5 ${muted}`}>{sub.timestamp ? new Date(sub.timestamp).toLocaleString() : '-'}</td>
+                    <td className="py-2.5">
+                      <button
+                        onClick={() => handleDeleteSubmission(i)}
+                        className="p-1 rounded hover:bg-red-50 text-gray-400 hover:text-red-600 transition-colors"
+                        title="Delete submission"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

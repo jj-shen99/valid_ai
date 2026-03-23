@@ -2,8 +2,11 @@ import React, { useState } from 'react'
 import { useStore } from '../store'
 import CodeEditor from '../components/CodeEditor'
 import ModuleSelector from '../components/ModuleSelector'
+import QuickStats from '../components/QuickStats'
+import FindingCard from '../components/FindingCard'
+import ExportPanel from '../components/ExportPanel'
 import { runAnalysis } from '../modules/analysisEngine'
-import { Play, Upload } from 'lucide-react'
+import { Play, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react'
 
 const LANGUAGE_OPTIONS = [
   { value: 'python', label: 'Python' },
@@ -49,7 +52,9 @@ export default function CodeSubmission() {
   const clearFindings = useStore((state) => state.clearFindings)
   const addSubmission = useStore((state) => state.addSubmission)
 
-  const [showAnalysis, setShowAnalysis] = useState(false)
+  const [analysisFindings, setAnalysisFindings] = useState([])
+  const [analysisScore, setAnalysisScore] = useState(null)
+  const [showResults, setShowResults] = useState(false)
 
   const handleRunAnalysis = async () => {
     if (!code.trim()) {
@@ -59,7 +64,9 @@ export default function CodeSubmission() {
 
     setIsRunning(true)
     clearFindings()
-    setShowAnalysis(true)
+    setAnalysisFindings([])
+    setAnalysisScore(null)
+    setShowResults(true)
 
     try {
       const apiKey = useStore.getState().apiKey
@@ -75,6 +82,10 @@ export default function CodeSubmission() {
       const infoCount = findings.filter(f => f.severity === 'Info').length
       const weighted = (critical * 10) + (high * 5) + (medium * 2) + (infoCount * 0.5)
       const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
+
+      setAnalysisFindings(findings)
+      setAnalysisScore(Math.min(100, score))
+
       const submission = {
         code,
         prompt,
@@ -122,16 +133,18 @@ export default function CodeSubmission() {
     setSelectedModules(profile.modules)
   }
 
-  if (showAnalysis && isRunning) {
-    return <AnalysisView onBack={() => setShowAnalysis(false)} />
-  }
+  const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }
+  const sortedFindings = [...analysisFindings].sort((a, b) => (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4))
 
   return (
     <div className="space-y-6">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-5 text-white">
-        <h2 className="text-xl font-bold mb-1">Submit Code for Analysis</h2>
-        <p className="text-blue-100 text-sm">Paste or upload code to test against AI failure modes</p>
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-5 text-white flex items-start justify-between">
+        <div>
+          <h2 className="text-xl font-bold mb-1">Submit Code for Analysis</h2>
+          <p className="text-blue-100 text-sm">Paste or upload code to test against AI failure modes</p>
+        </div>
+        <span className="text-xs text-blue-200 whitespace-nowrap ml-4 mt-1">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -205,27 +218,75 @@ export default function CodeSubmission() {
             disabled={isRunning || !code.trim()}
             className="w-full px-4 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
           >
-            <Play size={18} />
-            Run Analysis
+            {isRunning ? <Loader size={18} className="animate-spin" /> : <Play size={18} />}
+            {isRunning ? 'Running Analysis...' : 'Run Analysis'}
           </button>
         </div>
       </div>
-    </div>
-  )
-}
 
-function AnalysisView({ onBack }) {
-  return (
-    <div className="space-y-4">
-      <button
-        onClick={onBack}
-        className="px-4 py-2 text-blue-600 hover:text-blue-700 font-medium"
-      >
-        ← Back
-      </button>
-      <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
-        <p className="text-gray-600">Analysis running...</p>
-      </div>
+      {/* ─── Inline Analysis Results ─── */}
+      {showResults && (
+        <div className="space-y-4 border-t border-gray-200 pt-6">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Analysis Results
+              {analysisScore !== null && (
+                <span className={`ml-3 text-sm font-medium px-2.5 py-1 rounded-full ${
+                  analysisScore >= 80 ? 'bg-emerald-100 text-emerald-700' :
+                  analysisScore >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  Score: {analysisScore}%
+                </span>
+              )}
+            </h3>
+            {!isRunning && analysisFindings.length > 0 && (
+              <button
+                onClick={() => setShowResults(false)}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Hide Results
+              </button>
+            )}
+          </div>
+
+          {isRunning && (
+            <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+              <Loader className="animate-spin text-blue-600 mx-auto mb-3" size={28} />
+              <p className="text-gray-600 text-sm">Running analysis modules...</p>
+            </div>
+          )}
+
+          {!isRunning && analysisFindings.length > 0 && (
+            <>
+              <QuickStats findings={analysisFindings} />
+
+              <div className="space-y-3">
+                <p className="text-sm font-medium text-gray-700">{sortedFindings.length} findings</p>
+                {sortedFindings.map((finding, idx) => (
+                  <FindingCard key={finding.id || idx} finding={finding} />
+                ))}
+              </div>
+
+              <ExportPanel
+                findings={sortedFindings}
+                metadata={{
+                  language,
+                  modules: selectedModules,
+                  timestamp: new Date().toISOString(),
+                  source: 'code',
+                }}
+              />
+            </>
+          )}
+
+          {!isRunning && analysisFindings.length === 0 && analysisScore !== null && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5 text-center">
+              <p className="text-emerald-800 font-medium">No issues found — your code looks clean!</p>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
