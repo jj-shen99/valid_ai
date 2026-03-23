@@ -17,7 +17,7 @@ export default function SubmissionHistory({ submissions, onSelect, onDelete }) {
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="px-4 py-3 text-left font-semibold text-gray-900">Date</th>
-              <th className="px-4 py-3 text-left font-semibold text-gray-900">Language</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-900">Source</th>
               <th className="px-4 py-3 text-left font-semibold text-gray-900">Score</th>
               <th className="px-4 py-3 text-left font-semibold text-gray-900">Modules</th>
               <th className="px-4 py-3 text-right font-semibold text-gray-900">Actions</th>
@@ -29,7 +29,7 @@ export default function SubmissionHistory({ submissions, onSelect, onDelete }) {
                 <td className="px-4 py-3 text-gray-700">
                   {new Date(submission.timestamp).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3 text-gray-700 capitalize">{submission.language}</td>
+                <td className="px-4 py-3 text-gray-700">{submission.source === 'github' ? `GitHub: ${submission.repo || 'repo'}` : submission.language}</td>
                 <td className="px-4 py-3">
                   <span className={`px-2 py-1 rounded text-xs font-semibold ${
                     submission.score >= 80 ? 'bg-green-100 text-green-800' :

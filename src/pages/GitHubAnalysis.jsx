@@ -4,7 +4,8 @@ import GitHubCodeAnalysis from '../components/GitHubCodeAnalysis'
 import ModuleSelector from '../components/ModuleSelector'
 import AnalysisDetails from '../components/AnalysisDetails'
 import { runAnalysis } from '../modules/analysisEngine'
-import { Loader, Play, Zap, Shield, Search, ChevronDown, ChevronUp } from 'lucide-react'
+import { Loader, Play, Zap, Shield, Search, ChevronDown, ChevronUp, Globe } from 'lucide-react'
+import { exportGitHubReportAsHTML } from '../utils/exporters'
 
 const TEST_PROFILES = [
   { id: 'quick', name: 'Quick Scan', desc: 'Fast analysis (~2 min)', modules: ['failureMode', 'hallucination'], icon: Zap, color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
@@ -99,12 +100,9 @@ export default function GitHubAnalysis() {
   return (
     <div className="space-y-6">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-gray-900 to-gray-700 -mx-6 px-6 py-3 text-white flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-bold">GitHub Repo Analysis</h2>
-          <p className="text-gray-300 text-xs">Analyze commits from any GitHub repository for AI-generated code vulnerabilities</p>
-        </div>
-        <span className="text-xs text-gray-400 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+      <div className="bg-gradient-to-r from-gray-900 to-gray-700 -mx-6 px-6 py-2 text-white flex items-center justify-between">
+        <h2 className="text-sm font-bold">GitHub Repo Analysis <span className="font-normal text-gray-400 ml-2 text-xs">Analyze commits for AI-generated code vulnerabilities</span></h2>
+        <span className="text-xs text-gray-400 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -169,7 +167,18 @@ export default function GitHubAnalysis() {
 
       {/* Analysis Results */}
       {analysisData && !loading && (
-        <AnalysisDetails analysisData={analysisData} findings={localFindings} />
+        <>
+          <div className="flex justify-end">
+            <button
+              onClick={() => exportGitHubReportAsHTML(analysisData, localFindings)}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors flex items-center gap-2 text-sm font-medium shadow-sm"
+            >
+              <Globe size={16} />
+              Generate HTML Report
+            </button>
+          </div>
+          <AnalysisDetails analysisData={analysisData} findings={localFindings} />
+        </>
       )}
     </div>
   )

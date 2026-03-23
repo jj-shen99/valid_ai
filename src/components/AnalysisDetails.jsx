@@ -53,7 +53,7 @@ export default function AnalysisDetails({ analysisData, findings }) {
       categoryData: Object.entries(categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([name, value]) => ({ name, value })),
       authorData: Object.entries(authors).sort((a, b) => b[1] - a[1]).map(([name, value]) => ({ name, value })),
       avgCommitsPerDay: (commits.length / Math.max(days, 1)).toFixed(1),
-      riskScore: Math.min(100, Math.round(((sevCounts.Critical * 10) + (sevCounts.High * 5) + (sevCounts.Medium * 2) + (sevCounts.Info * 0.5)) / Math.max(findings.length, 1) * 10)),
+      riskScore: Math.max(0, Math.round(100 - ((sevCounts.Critical * 10) + (sevCounts.High * 5) + (sevCounts.Medium * 2) + (sevCounts.Info * 0.5)) / Math.max(findings.length, 1) * 10)),
       findingsPerCommit: commits.length > 0 ? (findings.length / commits.length).toFixed(1) : '0',
     }
   }, [commits, findings, days])
@@ -110,7 +110,7 @@ export default function AnalysisDetails({ analysisData, findings }) {
           { label: 'Authors', value: stats.uniqueAuthors, color: 'text-indigo-600' },
           { label: 'Findings', value: findings.length, color: 'text-amber-600' },
           { label: 'Critical', value: stats.sevCounts.Critical, color: 'text-red-600' },
-          { label: 'Risk Score', value: `${stats.riskScore}/100`, color: stats.riskScore > 50 ? 'text-red-600' : 'text-emerald-600' },
+          { label: 'Quality Score', value: `${stats.riskScore}/100`, color: stats.riskScore >= 50 ? 'text-emerald-600' : 'text-red-600' },
           { label: 'Findings/Commit', value: stats.findingsPerCommit, color: 'text-gray-700' },
         ].map((kpi, i) => (
           <div key={i} className={card}>
@@ -268,16 +268,16 @@ export default function AnalysisDetails({ analysisData, findings }) {
               <Brain size={20} className="text-purple-600" />
               <h4 className="font-semibold">ML-Powered Analysis</h4>
             </div>
-            {/* Risk Gauge */}
+            {/* Quality Gauge */}
             <div className="flex items-center gap-6 mb-6">
               <div className="text-center">
-                <div className={`w-24 h-24 rounded-full border-8 flex items-center justify-center ${stats.riskScore > 70 ? 'border-red-500' : stats.riskScore > 40 ? 'border-yellow-500' : 'border-emerald-500'}`}>
+                <div className={`w-24 h-24 rounded-full border-8 flex items-center justify-center ${stats.riskScore >= 70 ? 'border-emerald-500' : stats.riskScore >= 40 ? 'border-yellow-500' : 'border-red-500'}`}>
                   <span className="text-2xl font-bold">{stats.riskScore}</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-2">Risk Score</p>
+                <p className="text-xs text-gray-500 mt-2">Quality Score</p>
               </div>
               <div className="flex-1 space-y-2 text-sm">
-                <div className="flex justify-between"><span className="text-gray-500">Code Health</span><span className={`font-semibold ${stats.riskScore > 50 ? 'text-red-600' : 'text-emerald-600'}`}>{stats.riskScore > 70 ? 'Poor' : stats.riskScore > 40 ? 'Fair' : 'Good'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">Code Health</span><span className={`font-semibold ${stats.riskScore >= 70 ? 'text-emerald-600' : stats.riskScore >= 40 ? 'text-yellow-600' : 'text-red-600'}`}>{stats.riskScore >= 70 ? 'Good' : stats.riskScore >= 40 ? 'Fair' : 'Poor'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Anomaly Detection</span><span className="font-semibold">{stats.sevCounts.Critical > 0 ? 'Anomalies Found' : 'Normal'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Commit Pattern</span><span className="font-semibold">{stats.uniqueAuthors > 3 ? 'Team-based' : stats.uniqueAuthors > 1 ? 'Small team' : 'Solo'}</span></div>
                 <div className="flex justify-between"><span className="text-gray-500">Velocity</span><span className="font-semibold">{parseFloat(stats.avgCommitsPerDay) > 5 ? 'High' : parseFloat(stats.avgCommitsPerDay) > 1 ? 'Medium' : 'Low'}</span></div>
@@ -308,10 +308,10 @@ export default function AnalysisDetails({ analysisData, findings }) {
             <h4 className="font-semibold mb-3">Predictive Quality Trend</h4>
             <ResponsiveContainer width="100%" height={200}>
               <LineChart data={[
-                { period: 'Current', quality: 100 - stats.riskScore, predicted: null },
-                { period: '+1 week', quality: null, predicted: Math.max(10, 100 - stats.riskScore - (stats.sevCounts.Critical > 0 ? 5 : -3)) },
-                { period: '+2 weeks', quality: null, predicted: Math.max(10, 100 - stats.riskScore - (stats.sevCounts.Critical > 0 ? 8 : -5)) },
-                { period: '+1 month', quality: null, predicted: Math.max(10, 100 - stats.riskScore - (stats.sevCounts.Critical > 0 ? 12 : -8)) },
+                { period: 'Current', quality: stats.riskScore, predicted: null },
+                { period: '+1 week', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -5 : 3))) },
+                { period: '+2 weeks', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -8 : 5))) },
+                { period: '+1 month', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -12 : 8))) },
               ]}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis dataKey="period" tick={{ fontSize: 11 }} />

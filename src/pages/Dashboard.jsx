@@ -59,12 +59,9 @@ export default function Dashboard({ dark }) {
   return (
     <div className="space-y-6 max-w-6xl">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 -mx-6 px-6 py-3 text-white flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-bold">Dashboard</h2>
-          <p className="text-emerald-100 text-xs">Overview of your code quality metrics, findings, and module status</p>
-        </div>
-        <span className="text-xs text-emerald-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 -mx-6 px-6 py-2 text-white flex items-center justify-between">
+        <h2 className="text-sm font-bold">Dashboard <span className="font-normal text-emerald-200 ml-2 text-xs">Code quality metrics, findings & module status</span></h2>
+        <span className="text-xs text-emerald-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
       </div>
 
       {/* KPI Cards */}
@@ -143,7 +140,7 @@ export default function Dashboard({ dark }) {
             <table className="w-full text-sm">
               <thead>
                 <tr className={`${muted} text-left`}>
-                  <th className="pb-2 font-medium">Language</th>
+                  <th className="pb-2 font-medium">Source</th>
                   <th className="pb-2 font-medium">Modules</th>
                   <th className="pb-2 font-medium">Score</th>
                   <th className="pb-2 font-medium">Date</th>
@@ -153,7 +150,7 @@ export default function Dashboard({ dark }) {
               <tbody>
                 {submissions.slice(0, 10).map((sub, i) => (
                   <tr key={i} className={`border-t ${d ? 'border-gray-800' : 'border-gray-100'}`}>
-                    <td className="py-2.5 font-medium">{sub.language}</td>
+                    <td className="py-2.5 font-medium">{sub.source === 'github' ? `GitHub: ${sub.repo || 'repo'}` : sub.language}</td>
                     <td className="py-2.5">{sub.modules?.length || '-'}</td>
                     <td className="py-2.5">
                       <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${

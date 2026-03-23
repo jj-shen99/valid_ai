@@ -109,12 +109,9 @@ export default function AnalysisView({ onNavigate }) {
   return (
     <div className="space-y-6">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 -mx-6 px-6 py-3 text-white flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-bold">Analysis Results</h2>
-          <p className="text-indigo-100 text-xs">Review findings from past and current analyses across all modules</p>
-        </div>
-        <span className="text-xs text-indigo-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 -mx-6 px-6 py-2 text-white flex items-center justify-between">
+        <h2 className="text-sm font-bold">Analysis Results <span className="font-normal text-indigo-200 ml-2 text-xs">Review findings from past and current analyses</span></h2>
+        <span className="text-xs text-indigo-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
       </div>
 
       <div className="flex items-end justify-end">

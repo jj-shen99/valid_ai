@@ -5,7 +5,7 @@ export const securityProbe = (code, language) => {
   const patterns = [
     {
       name: 'SQL injection via string interpolation',
-      regex: /query\s*=\s*["`'].*\$\{.*\}.*["`']|f["`'].*\{.*\}.*["`']|query\s*\+=\s*\w+|\.query\s*\(\s*["`'].*\+/,
+      regex: /(?:query|sql|SELECT|INSERT|UPDATE|DELETE|WHERE)\s*(?:=|\+=)\s*["`'].*(?:\$\{|\{|\+\s*\w).*["`']|\.(?:query|execute|prepare)\s*\(\s*["`'].*\+|f["`'](?:SELECT|INSERT|UPDATE|DELETE|WHERE)\b/i,
       severity: 'Critical',
       owasp: 'A03:2021 – Injection',
       suggestion: 'Use parameterized queries or prepared statements. Never concatenate user input into SQL strings.',

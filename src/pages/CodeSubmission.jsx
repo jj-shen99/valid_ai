@@ -140,12 +140,9 @@ export default function CodeSubmission() {
   return (
     <div className="space-y-6">
       {/* Page Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 -mx-6 px-6 py-3 text-white flex items-center justify-between">
-        <div>
-          <h2 className="text-base font-bold">Submit Code for Analysis</h2>
-          <p className="text-blue-100 text-xs">Paste or upload code to test against AI failure modes</p>
-        </div>
-        <span className="text-xs text-blue-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 -mx-6 px-6 py-2 text-white flex items-center justify-between">
+        <h2 className="text-sm font-bold">Submit Code <span className="font-normal text-blue-200 ml-2 text-xs">Paste or upload code to test against AI failure modes</span></h2>
+        <span className="text-xs text-blue-200 whitespace-nowrap ml-4">{new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</span>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
