@@ -9,7 +9,7 @@ import { Loader, Play, Zap, Shield, Search, ChevronDown, ChevronUp } from 'lucid
 const TEST_PROFILES = [
   { id: 'quick', name: 'Quick Scan', desc: 'Fast analysis (~2 min)', modules: ['failureMode', 'hallucination'], icon: Zap, color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
   { id: 'security', name: 'Security Focus', desc: 'Security & compliance', modules: ['security', 'hallucination'], icon: Shield, color: 'text-red-600 bg-red-50 border-red-200' },
-  { id: 'full', name: 'Full Audit', desc: 'All modules', modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'prompt'], icon: Search, color: 'text-blue-600 bg-blue-50 border-blue-200' },
+  { id: 'full', name: 'Full Audit', desc: 'All modules', modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'prompt', 'aiReview'], icon: Search, color: 'text-blue-600 bg-blue-50 border-blue-200' },
 ]
 
 export default function GitHubAnalysis() {
@@ -56,7 +56,12 @@ export default function GitHubAnalysis() {
       setAnalysisData(data)
       setFindings(allFindings)
 
-      const score = allFindings.length === 0 ? 100 : Math.max(0, 100 - (allFindings.length * 2))
+      const crit = allFindings.filter(f => f.severity === 'Critical').length
+      const hi = allFindings.filter(f => f.severity === 'High').length
+      const med = allFindings.filter(f => f.severity === 'Medium').length
+      const inf = allFindings.filter(f => f.severity === 'Info').length
+      const weighted = (crit * 10) + (hi * 5) + (med * 2) + (inf * 0.5)
+      const score = allFindings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
       const submission = {
         code: `GitHub: ${data.owner}/${data.repo} (${data.branch})`,
         language: 'github',

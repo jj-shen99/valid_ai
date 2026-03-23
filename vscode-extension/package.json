@@ -48,7 +48,7 @@
       "properties": {
         "validai.webUIUrl": {
           "type": "string",
-          "default": "http://localhost:3000",
+          "default": "http://localhost:3600",
           "description": "URL of the ValidAI web interface"
         },
         "validai.enableDiagnostics": {

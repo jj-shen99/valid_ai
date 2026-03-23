@@ -32,7 +32,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const openWebUICommand = vscode.commands.registerCommand('validai.openWebUI', async () => {
     const config = vscode.workspace.getConfiguration('validai')
-    const webUIUrl = config.get<string>('webUIUrl') || 'http://localhost:3000'
+    const webUIUrl = config.get<string>('webUIUrl') || 'http://localhost:3600'
     vscode.env.openExternal(vscode.Uri.parse(webUIUrl))
   })
 
@@ -41,7 +41,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 async function analyzeCode(code: string, language: string, fileName: string) {
   const config = vscode.workspace.getConfiguration('validai')
-  const webUIUrl = config.get<string>('webUIUrl') || 'http://localhost:3000'
+  const webUIUrl = config.get<string>('webUIUrl') || 'http://localhost:3600'
 
   try {
     vscode.window.showInformationMessage('Analyzing code with ValidAI...')

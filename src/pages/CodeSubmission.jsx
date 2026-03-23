@@ -31,7 +31,7 @@ const TEST_PROFILES = [
     id: 'full',
     name: 'Full Audit',
     description: 'All modules',
-    modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity'],
+    modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'prompt', 'aiReview'],
   },
 ]
 
@@ -69,7 +69,12 @@ export default function CodeSubmission() {
         useStore.getState().addFinding(finding)
       })
 
-      const score = findings.length === 0 ? 100 : Math.max(0, 100 - (findings.length * 5))
+      const critical = findings.filter(f => f.severity === 'Critical').length
+      const high = findings.filter(f => f.severity === 'High').length
+      const medium = findings.filter(f => f.severity === 'Medium').length
+      const infoCount = findings.filter(f => f.severity === 'Info').length
+      const weighted = (critical * 10) + (high * 5) + (medium * 2) + (infoCount * 0.5)
+      const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
       const submission = {
         code,
         prompt,

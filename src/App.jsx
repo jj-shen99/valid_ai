@@ -89,8 +89,7 @@ export default function App() {
       {/* ─── Main Area ─── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <header className={`h-14 flex-shrink-0 flex items-center justify-between px-6 border-b backdrop-blur-sm ${cls.header}`}>
-          <h1 className="text-lg font-semibold">{NAV.find(n => n.id === page)?.label}</h1>
+        <header className={`h-14 flex-shrink-0 flex items-center justify-end px-6 border-b backdrop-blur-sm ${cls.header}`}>
           <span className={`text-xs ${cls.muted}`}>
             {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
           </span>
