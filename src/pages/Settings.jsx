@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../store'
-import { Eye, EyeOff, Save, Trash2, Database, Github } from 'lucide-react'
+import { Eye, EyeOff, Save, Trash2, Database, Github, Lock, Shield } from 'lucide-react'
 
 export default function Settings() {
   const apiKey = useStore((s) => s.apiKey)
@@ -38,8 +38,13 @@ export default function Settings() {
     <div className="max-w-2xl space-y-6">
       {/* Claude API Key */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <h3 className="font-semibold mb-1">Claude API Key</h3>
-        <p className="text-sm text-gray-500 mb-4">Required for the AI Review Assistant module.</p>
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="font-semibold">Claude API Key</h3>
+          <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+            <Lock size={12} /> AES-256 Encrypted
+          </span>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">Required for the AI Review Assistant module. Encrypted before storage.</p>
         <div className="space-y-3">
           <div className="relative">
             <input
@@ -63,13 +68,20 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* GitHub Token */}
+      {/* GitHub Authentication */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
-        <div className="flex items-center gap-2 mb-1">
-          <Github size={18} />
-          <h3 className="font-semibold">GitHub Personal Access Token</h3>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <Github size={18} />
+            <h3 className="font-semibold">GitHub Authentication</h3>
+          </div>
+          <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+            <Lock size={12} /> AES-256 Encrypted
+          </span>
         </div>
-        <p className="text-sm text-gray-500 mb-4">Increases API rate limits from 60 to 5,000 requests/hour. Also needed for private repos.</p>
+        <p className="text-sm text-gray-500 mb-4">
+          Your token is encrypted with AES-256-GCM before storage. Increases API rate limits from 60 to 5,000 requests/hour. Required for private repos.
+        </p>
         <div className="space-y-3">
           <div className="relative">
             <input
@@ -83,13 +95,23 @@ export default function Settings() {
               {showGHToken ? <EyeOff size={16} /> : <Eye size={16} />}
             </button>
           </div>
-          <button
-            onClick={handleSaveGH}
-            disabled={tempGH === githubToken}
-            className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            <Save size={16} /> Save
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSaveGH}
+              disabled={tempGH === githubToken}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            >
+              <Save size={16} /> Save Token
+            </button>
+            {githubToken && (
+              <span className="text-xs text-emerald-600 flex items-center gap-1">
+                <Shield size={14} /> Token configured
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400">
+            Generate a token at GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens. Grant "Contents: Read" access.
+          </p>
         </div>
       </div>
 

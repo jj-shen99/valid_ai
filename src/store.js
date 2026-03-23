@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import * as db from './utils/db'
+import { encrypt, decrypt } from './utils/crypto'
 
 export const useStore = create((set, get) => ({
   code: '',
@@ -55,16 +56,30 @@ export const useStore = create((set, get) => ({
     set({ submissions: [], findings: [] })
   },
 
-  githubToken: localStorage.getItem('githubToken') || '',
-  setGithubToken: (token) => {
-    localStorage.setItem('githubToken', token)
+  githubToken: '',
+  setGithubToken: async (token) => {
+    const encrypted = await encrypt(token)
+    localStorage.setItem('githubToken_enc', encrypted)
+    localStorage.removeItem('githubToken')
     set({ githubToken: token })
   },
 
-  apiKey: localStorage.getItem('claudeApiKey') || '',
-  setApiKey: (key) => {
-    localStorage.setItem('claudeApiKey', key)
+  apiKey: '',
+  setApiKey: async (key) => {
+    const encrypted = await encrypt(key)
+    localStorage.setItem('claudeApiKey_enc', encrypted)
+    localStorage.removeItem('claudeApiKey')
     set({ apiKey: key })
+  },
+
+  loadSecrets: async () => {
+    const ghEnc = localStorage.getItem('githubToken_enc') || ''
+    const apiEnc = localStorage.getItem('claudeApiKey_enc') || ''
+    const ghPlain = localStorage.getItem('githubToken') || ''
+    const apiPlain = localStorage.getItem('claudeApiKey') || ''
+    const githubToken = ghEnc ? await decrypt(ghEnc) : ghPlain
+    const apiKey = apiEnc ? await decrypt(apiEnc) : apiPlain
+    set({ githubToken, apiKey })
   },
 
   notifications: [],

@@ -24,9 +24,10 @@ export default function App() {
   const [dark, setDark] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
   const loadFromDB = useStore((s) => s.loadFromDB)
+  const loadSecrets = useStore((s) => s.loadSecrets)
   const notifications = useStore((s) => s.notifications)
 
-  useEffect(() => { loadFromDB() }, [])
+  useEffect(() => { loadFromDB(); loadSecrets() }, [])
 
   const d = dark
   const cls = {

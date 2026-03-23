@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
-import { Github, Calendar, Loader, AlertCircle } from 'lucide-react'
+import { useStore } from '../store'
+import { Github, Calendar, Loader, AlertCircle, Lock } from 'lucide-react'
 
 const TIME_PERIODS = [
   { value: 7, label: 'Last 7 days' },
@@ -9,27 +10,40 @@ const TIME_PERIODS = [
 ]
 
 export default function GitHubCodeAnalysis({ onAnalyze }) {
-  const [owner, setOwner] = useState('')
-  const [repo, setRepo] = useState('')
+  const [repoPath, setRepoPath] = useState('')
   const [branch, setBranch] = useState('main')
   const [days, setDays] = useState(7)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const githubToken = useStore((s) => s.githubToken)
+
+  const parseRepo = (input) => {
+    let cleaned = input.trim()
+    cleaned = cleaned.replace(/^https?:\/\/github\.com\//, '')
+    cleaned = cleaned.replace(/\.git$/, '')
+    cleaned = cleaned.replace(/\/$/, '')
+    const parts = cleaned.split('/')
+    if (parts.length >= 2) {
+      return { owner: parts[0], repo: parts[1] }
+    }
+    return null
+  }
 
   const handleAnalyze = async () => {
-    if (!owner || !repo) {
-      setError('Please enter owner and repository name')
+    const parsed = parseRepo(repoPath)
+    if (!parsed) {
+      setError('Enter a repository as owner/repo (e.g. facebook/react) or paste a GitHub URL')
       return
     }
 
+    const { owner, repo } = parsed
     setLoading(true)
     setError('')
 
     try {
       const headers = {}
-      const token = localStorage.getItem('githubToken')
-      if (token) {
-        headers['Authorization'] = `token ${token}`
+      if (githubToken) {
+        headers['Authorization'] = `token ${githubToken}`
       }
 
       const response = await fetch(
@@ -44,7 +58,7 @@ export default function GitHubCodeAnalysis({ onAnalyze }) {
           throw new Error(`Rate limited. Add a GitHub token in Settings to increase your limit. (${msg})`)
         }
         if (response.status === 404) {
-          throw new Error(`Repository not found: ${owner}/${repo}. Check the owner and repo name.`)
+          throw new Error(`Repository not found: ${owner}/${repo}. Check the repository path.`)
         }
         throw new Error(`GitHub API error (${response.status}): ${msg}`)
       }
@@ -56,16 +70,14 @@ export default function GitHubCodeAnalysis({ onAnalyze }) {
         return
       }
 
-      const analysisData = {
+      onAnalyze({
         owner,
         repo,
         branch,
         days,
         commits: commits.slice(0, 50),
         period: `${days} days`,
-      }
-
-      onAnalyze(analysisData)
+      })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -74,55 +86,53 @@ export default function GitHubCodeAnalysis({ onAnalyze }) {
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Github size={20} className="text-gray-900" />
-        <h3 className="text-lg font-semibold text-gray-900">Analyze GitHub Changes</h3>
+    <div className="bg-white border border-gray-200 rounded-xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Github size={20} />
+          <h3 className="font-semibold">Analyze GitHub Changes</h3>
+        </div>
+        {githubToken ? (
+          <span className="flex items-center gap-1 text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+            <Lock size={12} /> Authenticated
+          </span>
+        ) : (
+          <span className="text-xs text-gray-400">Unauthenticated (60 req/hr)</span>
+        )}
       </div>
 
       <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Repository</label>
+          <input
+            type="text"
+            value={repoPath}
+            onChange={(e) => setRepoPath(e.target.value)}
+            placeholder="owner/repo or https://github.com/owner/repo"
+            className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">Owner</label>
-            <input
-              type="text"
-              value={owner}
-              onChange={(e) => setOwner(e.target.value)}
-              placeholder="username or organization"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">Repository</label>
-            <input
-              type="text"
-              value={repo}
-              onChange={(e) => setRepo(e.target.value)}
-              placeholder="repository-name"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">Branch</label>
+            <label className="block text-sm font-medium mb-1">Branch</label>
             <input
               type="text"
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
               placeholder="main"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-1">Time Period</label>
+            <label className="block text-sm font-medium mb-1">Time Period</label>
             <select
               value={days}
               onChange={(e) => setDays(parseInt(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              {TIME_PERIODS.map((period) => (
-                <option key={period.value} value={period.value}>
-                  {period.label}
-                </option>
+              {TIME_PERIODS.map((p) => (
+                <option key={p.value} value={p.value}>{p.label}</option>
               ))}
             </select>
           </div>
@@ -130,25 +140,19 @@ export default function GitHubCodeAnalysis({ onAnalyze }) {
 
         <button
           onClick={handleAnalyze}
-          disabled={loading || !owner || !repo}
-          className="w-full px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          disabled={loading || !repoPath.trim()}
+          className="w-full px-4 py-2.5 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
         >
           {loading ? (
-            <>
-              <Loader className="animate-spin" size={16} />
-              Fetching commits...
-            </>
+            <><Loader className="animate-spin" size={16} /> Fetching commits...</>
           ) : (
-            <>
-              <Calendar size={16} />
-              Analyze Changes
-            </>
+            <><Calendar size={16} /> Analyze Changes</>
           )}
         </button>
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="text-red-600 flex-shrink-0 mt-0.5" size={18} />
+            <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={16} />
             <p className="text-sm text-red-700">{error}</p>
           </div>
         )}
