@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useStore } from './store'
 import Dashboard from './pages/Dashboard'
 import CodeSubmission from './pages/CodeSubmission'
@@ -7,7 +7,7 @@ import Settings from './pages/Settings'
 import TrendHistory from './pages/TrendHistory'
 import Tutorials from './pages/Tutorials'
 import GitHubAnalysis from './pages/GitHubAnalysis'
-import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, BookOpen, Github, Moon, Sun, PanelLeftClose, PanelLeft } from 'lucide-react'
+import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, BookOpen, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X } from 'lucide-react'
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -23,6 +23,10 @@ export default function App() {
   const [page, setPage] = useState('dashboard')
   const [dark, setDark] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const loadFromDB = useStore((s) => s.loadFromDB)
+  const notifications = useStore((s) => s.notifications)
+
+  useEffect(() => { loadFromDB() }, [])
 
   const d = dark
   const cls = {
@@ -104,6 +108,26 @@ export default function App() {
           {page === 'settings' && <Settings />}
         </main>
       </div>
+
+      {/* Toast notifications */}
+      {notifications.length > 0 && (
+        <div className="fixed bottom-4 right-4 z-50 space-y-2 max-w-sm">
+          {notifications.map((n) => (
+            <div
+              key={n.id}
+              className={`flex items-start gap-2 px-4 py-3 rounded-lg shadow-lg text-sm font-medium border
+                ${n.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' :
+                  n.type === 'error' ? 'bg-red-50 text-red-800 border-red-200' :
+                  'bg-blue-50 text-blue-800 border-blue-200'}`}
+            >
+              {n.type === 'success' ? <CheckCircle size={16} className="mt-0.5 flex-shrink-0" /> :
+               n.type === 'error' ? <AlertCircle size={16} className="mt-0.5 flex-shrink-0" /> :
+               <Info size={16} className="mt-0.5 flex-shrink-0" />}
+              <span className="flex-1">{n.msg}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

@@ -26,18 +26,33 @@ export default function GitHubCodeAnalysis({ onAnalyze }) {
     setError('')
 
     try {
+      const headers = {}
+      const token = localStorage.getItem('githubToken')
+      if (token) {
+        headers['Authorization'] = `token ${token}`
+      }
+
       const response = await fetch(
-        `https://api.github.com/repos/${owner}/${repo}/commits?since=${getDateString(days)}&sha=${branch}`
+        `https://api.github.com/repos/${owner}/${repo}/commits?since=${getDateString(days)}&sha=${branch}&per_page=50`,
+        { headers }
       )
 
       if (!response.ok) {
-        throw new Error(`GitHub API error: ${response.statusText}`)
+        const body = await response.json().catch(() => ({}))
+        const msg = body.message || response.statusText || `HTTP ${response.status}`
+        if (response.status === 403) {
+          throw new Error(`Rate limited. Add a GitHub token in Settings to increase your limit. (${msg})`)
+        }
+        if (response.status === 404) {
+          throw new Error(`Repository not found: ${owner}/${repo}. Check the owner and repo name.`)
+        }
+        throw new Error(`GitHub API error (${response.status}): ${msg}`)
       }
 
       const commits = await response.json()
 
-      if (commits.length === 0) {
-        setError(`No commits found in the last ${days} days`)
+      if (!Array.isArray(commits) || commits.length === 0) {
+        setError(`No commits found in the last ${days} days on branch "${branch}"`)
         return
       }
 
