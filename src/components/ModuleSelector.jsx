@@ -2,16 +2,16 @@ import React from 'react'
 import { useStore } from '../store'
 
 const MODULES = [
-  { id: 'failureMode', name: 'Failure Mode Scanner', icon: '🔍', chapter: 'Ch 3' },
-  { id: 'oracle', name: 'Oracle Checker', icon: '📋', chapter: 'Ch 4' },
-  { id: 'prompt', name: 'Prompt Testability Score', icon: '📝', chapter: 'Ch 6' },
-  { id: 'property', name: 'Property Generator', icon: '🎯', chapter: 'Ch 7' },
-  { id: 'differential', name: 'Differential Runner', icon: '⚖️', chapter: 'Ch 8' },
-  { id: 'complexity', name: 'Complexity Profiler', icon: '📊', chapter: 'Ch 9' },
-  { id: 'security', name: 'Security Probe', icon: '🔒', chapter: 'Ch 13' },
-  { id: 'mutation', name: 'Mutation Scorer', icon: '🧬', chapter: 'Ch 7/10' },
-  { id: 'hallucination', name: 'Hallucination Detector', icon: '👻', chapter: 'Ch 2' },
-  { id: 'aiReview', name: 'AI Review Assistant', icon: '🤖', chapter: 'Ch 11' },
+  { id: 'failureMode', name: 'Failure Mode Scanner', icon: '🔍', desc: 'Off-by-one, null checks, silent exceptions' },
+  { id: 'security', name: 'Security Probe', icon: '�', desc: 'OWASP Top 10, injection, XSS, credentials' },
+  { id: 'hallucination', name: 'Hallucination Detector', icon: '�', desc: 'Non-existent API calls, phantom methods' },
+  { id: 'complexity', name: 'Complexity Profiler', icon: '📊', desc: 'Nested loops, sync blocking, memory leaks' },
+  { id: 'oracle', name: 'Oracle Checker', icon: '📋', desc: 'Input validation, return types, contracts' },
+  { id: 'mutation', name: 'Mutation Scorer', icon: '🧬', desc: 'Boundary operators, boolean negation targets' },
+  { id: 'property', name: 'Property Generator', icon: '🎯', desc: 'Function signatures, testability analysis' },
+  { id: 'differential', name: 'Differential Runner', icon: '⚖️', desc: 'Versioned functions, algorithm comparison' },
+  { id: 'prompt', name: 'Prompt Testability', icon: '�', desc: 'Edge cases, constraints, error semantics' },
+  { id: 'aiReview', name: 'AI Review Assistant', icon: '🤖', desc: 'Claude-powered anti-pattern detection' },
 ]
 
 export default function ModuleSelector() {
@@ -44,7 +44,7 @@ export default function ModuleSelector() {
               <span>{module.icon}</span>
               {module.name}
             </div>
-            <div className="text-xs text-gray-500">{module.chapter}</div>
+            <div className="text-xs text-gray-500">{module.desc}</div>
           </div>
         </label>
       ))}

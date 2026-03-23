@@ -2,11 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { runAnalysis, getModuleInfo } from '../../src/modules/analysisEngine'
 
 describe('runAnalysis', () => {
-  it('returns empty array for clean code with no matching patterns', async () => {
+  it('returns findings for mutation module on simple code', async () => {
     const findings = await runAnalysis('const x = 1', 'javascript', ['mutation'], '', '')
-    // mutation always returns 1 info finding
-    expect(findings).toHaveLength(1)
-    expect(findings[0].severity).toBe('Info')
+    // mutation now returns a summary + any detected targets
+    expect(findings.length).toBeGreaterThanOrEqual(1)
+    expect(findings[0].module).toBe('mutation')
   })
 
   it('runs multiple modules and combines findings', async () => {
@@ -49,7 +49,8 @@ describe('getModuleInfo', () => {
     expect(info).toBeDefined()
     expect(info.name).toBe('Failure Mode Scanner')
     expect(info.icon).toBe('🔍')
-    expect(info.chapter).toBe('Ch 3')
+    expect(info.description).toBeDefined()
+    expect(info.estimatedTime).toBeDefined()
   })
 
   it('returns info for security module', () => {

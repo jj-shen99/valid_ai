@@ -36,6 +36,12 @@ export default function Settings() {
 
   return (
     <div className="max-w-2xl space-y-6">
+      {/* Page Banner */}
+      <div className="bg-gradient-to-r from-slate-700 to-slate-500 rounded-xl p-5 text-white">
+        <h2 className="text-xl font-bold mb-1">Settings</h2>
+        <p className="text-slate-200 text-sm">Manage API keys, authentication, and application data</p>
+      </div>
+
       {/* Claude API Key */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <div className="flex items-center justify-between mb-1">

@@ -19,7 +19,6 @@ export const exportAsJSON = (findings, metadata) => {
       description: f.description,
       lineNumber: f.lineNumber,
       suggestion: f.suggestion,
-      chapter: f.chapterLink,
     })),
   }
   
@@ -48,7 +47,7 @@ export const exportAsMarkdown = (findings, metadata) => {
     md += `**Line:** ${f.lineNumber}\n`
     md += `**Description:** ${f.description}\n`
     md += `**Suggestion:** ${f.suggestion}\n`
-    md += `**Chapter:** ${f.chapterLink}\n\n`
+    md += `\n`
   })
   
   const dataBlob = new Blob([md], { type: 'text/markdown' })
@@ -88,7 +87,6 @@ export const exportAsSARIF = (findings, metadata) => {
           properties: {
             category: f.category,
             suggestion: f.suggestion,
-            chapter: f.chapterLink,
           },
         })),
       },

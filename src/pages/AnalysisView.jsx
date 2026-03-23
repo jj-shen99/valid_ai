@@ -15,11 +15,11 @@ const MODULES = {
   mutation: { name: 'Mutation Scorer', icon: '🧬' },
   property: { name: 'Property Generator', icon: '🎯' },
   differential: { name: 'Differential Runner', icon: '⚖️' },
-  prompt: { name: 'Prompt Testability Score', icon: '📝' },
+  prompt: { name: 'Prompt Testability', icon: '📝' },
   aiReview: { name: 'AI Review Assistant', icon: '🤖' },
 }
 
-export default function AnalysisView() {
+export default function AnalysisView({ onNavigate }) {
   const selectedModules = useStore((state) => state.selectedModules)
   const liveFindings = useStore((state) => state.findings)
   const isRunning = useStore((state) => state.isRunning)
@@ -82,6 +82,10 @@ export default function AnalysisView() {
     setDropdownOpen(false)
   }
 
+  const handleGoToSubmit = () => {
+    if (onNavigate) onNavigate('submit')
+  }
+
   // Determine which findings and modules to display
   const isLive = selectedSubId === 'live'
   const displayFindings = isLive ? liveFindings : (loadedFindings || [])
@@ -104,12 +108,13 @@ export default function AnalysisView() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between flex-wrap gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-900 mb-1">Analysis Results</h2>
-          <p className="text-gray-600 text-sm">Review findings from selected test modules</p>
-        </div>
+      {/* Page Banner */}
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl p-5 text-white">
+        <h2 className="text-xl font-bold mb-1">Analysis Results</h2>
+        <p className="text-indigo-100 text-sm">Review findings from past and current analyses across all modules</p>
+      </div>
 
+      <div className="flex items-end justify-end">
         {/* ─── Analysis Selector Dropdown ─── */}
         <div className="relative">
           <button
@@ -248,7 +253,10 @@ export default function AnalysisView() {
                 <AlertCircle className="text-blue-600 flex-shrink-0 mt-0.5" size={20} />
                 <div>
                   <p className="font-medium text-blue-900">No findings yet</p>
-                  <p className="text-sm text-blue-700">{isLive ? 'Run an analysis from Submit Code or GitHub to see results' : 'This saved analysis has no findings.'}</p>
+                  <p className="text-sm text-blue-700">{isLive ? 'Run an analysis from Submit Code or GitHub to see results.' : 'This saved analysis has no findings.'}</p>
+                  {isLive && (
+                    <button onClick={handleGoToSubmit} className="mt-2 text-sm font-medium text-blue-700 underline hover:text-blue-900">Go to Submit Code</button>
+                  )}
                 </div>
               </div>
             )}

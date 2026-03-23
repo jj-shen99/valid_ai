@@ -123,9 +123,10 @@ export default function CodeSubmission() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold text-gray-900 mb-2">Submit Code for Analysis</h2>
-        <p className="text-gray-600">Paste or upload code to test against AI failure modes</p>
+      {/* Page Banner */}
+      <div className="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-5 text-white">
+        <h2 className="text-xl font-bold mb-1">Submit Code for Analysis</h2>
+        <p className="text-blue-100 text-sm">Paste or upload code to test against AI failure modes</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

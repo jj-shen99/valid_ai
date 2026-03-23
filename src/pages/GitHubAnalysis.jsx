@@ -88,6 +88,12 @@ export default function GitHubAnalysis() {
 
   return (
     <div className="space-y-6">
+      {/* Page Banner */}
+      <div className="bg-gradient-to-r from-gray-900 to-gray-700 rounded-xl p-5 text-white">
+        <h2 className="text-xl font-bold mb-1">GitHub Analysis</h2>
+        <p className="text-gray-300 text-sm">Analyze commits from any GitHub repository for AI-generated code vulnerabilities</p>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: GitHub input + progress */}
         <div className="lg:col-span-2 space-y-4">

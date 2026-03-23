@@ -4,17 +4,18 @@ import { TrendingUp, AlertTriangle, Shield, Bug, Zap, FileText, CheckCircle, XCi
 
 export default function Dashboard({ dark }) {
   const submissions = useStore((s) => s.submissions)
-  const findings = useStore((s) => s.findings)
 
   const d = dark
   const card = d ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
   const muted = d ? 'text-gray-400' : 'text-gray-500'
 
-  const critical = findings.filter(f => f.severity === 'Critical').length
-  const high = findings.filter(f => f.severity === 'High').length
-  const medium = findings.filter(f => f.severity === 'Medium').length
-  const info = findings.filter(f => f.severity === 'Info').length
-  const total = findings.length
+  // Aggregate findings from all submissions
+  const allFindings = submissions.flatMap(s => s.findings || [])
+  const critical = allFindings.filter(f => f.severity === 'Critical').length
+  const high = allFindings.filter(f => f.severity === 'High').length
+  const medium = allFindings.filter(f => f.severity === 'Medium').length
+  const info = allFindings.filter(f => f.severity === 'Info').length
+  const total = allFindings.length
   const avgScore = submissions.length > 0
     ? Math.round(submissions.reduce((a, s) => a + (s.score || 0), 0) / submissions.length)
     : 0
@@ -48,6 +49,12 @@ export default function Dashboard({ dark }) {
 
   return (
     <div className="space-y-6 max-w-6xl">
+      {/* Page Banner */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white">
+        <h2 className="text-xl font-bold mb-1">Dashboard</h2>
+        <p className="text-emerald-100 text-sm">Overview of your code quality metrics, findings, and module status</p>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {kpis.map((kpi, i) => {

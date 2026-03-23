@@ -274,7 +274,7 @@ ValidAI includes comprehensive tutorials covering:
 
 ### Book References
 
-All findings link to chapters in "Testing the Machine" by Jeremy Kun:
+All findings link to chapters in "Testing the Machine" by JJ Shen:
 - Ch 2: The Hallucination Problem
 - Ch 3: The Bug Zoo
 - Ch 4: The Oracle Problem
@@ -324,13 +324,6 @@ Contributions are welcome! Areas for contribution:
 
 MIT License — See LICENSE file for details
 
-## 🙏 Acknowledgments
-
-- Built with React, Vite, and Tailwind CSS
-- Inspired by "Testing the Machine" by Jeremy Kun
-- Uses Claude API for AI-powered code review
-- GitHub API for repository analysis
-
 ## 📞 Support
 
 - **Issues** — Report bugs on GitHub
@@ -340,8 +333,7 @@ MIT License — See LICENSE file for details
 ## 🔗 Links
 
 - **GitHub** — https://github.com/jj-shen99/valid_ai
-- **Book** — "Testing the Machine" by Jeremy Kun
-- **Claude API** — https://www.anthropic.com/
+- **Book** — "Testing the Machine" by JJ Shen
 
 ---
 

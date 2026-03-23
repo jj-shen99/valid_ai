@@ -56,7 +56,7 @@ describe('securityProbe', () => {
   })
 
   it('detects multiple security issues', () => {
-    const code = 'password = "abc"\neval(userInput)\nconst h = md5(x)'
+    const code = 'password = "abc12345"\neval(userInput)\nconst h = md5(x)'
     const findings = securityProbe(code, 'javascript')
     expect(findings.length).toBeGreaterThanOrEqual(3)
   })

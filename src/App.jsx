@@ -5,17 +5,15 @@ import CodeSubmission from './pages/CodeSubmission'
 import AnalysisView from './pages/AnalysisView'
 import Settings from './pages/Settings'
 import TrendHistory from './pages/TrendHistory'
-import Tutorials from './pages/Tutorials'
 import GitHubAnalysis from './pages/GitHubAnalysis'
-import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, BookOpen, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X } from 'lucide-react'
+import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X } from 'lucide-react'
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
   { id: 'submit', label: 'Submit Code', icon: FileText },
+  { id: 'github', label: 'GitHub Analysis', icon: Github },
   { id: 'analysis', label: 'Analysis Results', icon: BarChart3 },
   { id: 'trends', label: 'Trends', icon: TrendingUp },
-  { id: 'github', label: 'GitHub', icon: Github },
-  { id: 'tutorials', label: 'Learn', icon: BookOpen },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ]
 
@@ -102,10 +100,9 @@ export default function App() {
         <main className="flex-1 overflow-y-auto p-6">
           {page === 'dashboard' && <Dashboard dark={dark} />}
           {page === 'submit' && <CodeSubmission />}
-          {page === 'analysis' && <AnalysisView />}
+          {page === 'analysis' && <AnalysisView onNavigate={setPage} />}
           {page === 'trends' && <TrendHistory />}
           {page === 'github' && <GitHubAnalysis />}
-          {page === 'tutorials' && <Tutorials />}
           {page === 'settings' && <Settings />}
         </main>
       </div>
