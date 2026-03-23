@@ -34,7 +34,7 @@ ValidAI is a single-page application (SPA) built with React that runs entirely i
 │       │              │                                  │
 │  ┌────▼─────────────▼──────┐  ┌────────────────────┐   │
 │  │   Analysis Engine       │  │  Web Crypto API    │   │
-│  │   (10 modules)          │  │  (AES-256-GCM)     │   │
+│  │   (9 modules)           │  │  (AES-256-GCM)     │   │
 │  └─────────────────────────┘  └────────────────────┘   │
 │                                                         │
 │  ┌─────────────────────────┐  ┌────────────────────┐   │
@@ -85,7 +85,6 @@ graph TB
         MS[Mutation Scorer]
         PG[Property Generator]
         DR[Differential Runner]
-        PT[Prompt Testability]
         AR[AI Review Assistant]
     end
 
@@ -108,7 +107,7 @@ graph TB
     AnalysisView --> FindingCard & QuickStats & ExportPanel
     TrendHistory --> TrendChart
 
-    AE --> FM & SP & HD & CP & OC & MS & PG & DR & PT & AR
+    AE --> FM & SP & HD & CP & OC & MS & PG & DR & AR
     AR --> Claude
 
     CodeSubmission --> Store
@@ -214,10 +213,9 @@ graph LR
     AE --> HD["hallucination<br/>API cross-ref"]
     AE --> CP["complexity<br/>8 patterns"]
     AE --> OC["oracle<br/>5 patterns"]
-    AE --> MS["mutation<br/>5 targets + density"]
+    AE --> MS["mutation<br/>3 patterns + density"]
     AE --> PG["property<br/>signature analysis"]
-    AE --> DR["differential<br/>5 patterns"]
-    AE --> PT["prompt<br/>keyword analysis"]
+    AE --> DR["differential<br/>5 detectors"]
     AE --> AR["aiReview<br/>Claude API"]
 
     style FM fill:#ef4444,color:#fff
@@ -228,7 +226,6 @@ graph LR
     style MS fill:#10b981,color:#fff
     style PG fill:#f59e0b,color:#fff
     style DR fill:#ec4899,color:#fff
-    style PT fill:#6366f1,color:#fff
     style AR fill:#14b8a6,color:#fff
 ```
 
@@ -263,10 +260,9 @@ The **AI Review Assistant** is the exception — it sends code to the Claude API
 | Hallucination Detector | ~150 known APIs | API cross-reference |
 | Complexity Profiler | 8 | Regex per-line |
 | Oracle Checker | 5 | Regex per-line |
-| Mutation Scorer | 5 + density | Regex + statistics |
+| Mutation Scorer | 3 + density | Regex per-line + deduplication |
 | Property Generator | 3 | Regex signature analysis |
-| Differential Runner | 5 | Regex per-line |
-| Prompt Testability | 5 | Keyword analysis |
+| Differential Runner | 5 | Regex per-line + cross-reference |
 | AI Review Assistant | Semantic | Claude API call |
 
 ---
@@ -510,9 +506,10 @@ Findings are always displayed most-severe-first.
 ### Formula
 
 ```
-score = max(0, 100 - weighted_sum)
-
-weighted_sum = (critical × 10) + (high × 5) + (medium × 2) + (info × 0.5)
+actionable = findings.filter(severity !== 'Info')
+weighted_sum = (critical × 10) + (high × 5) + (medium × 2)
+avgPenalty = weighted_sum / actionable.length
+score = max(0, 100 − avgPenalty × 10)
 ```
 
 ### Impact Table
@@ -522,7 +519,7 @@ weighted_sum = (critical × 10) + (high × 5) + (medium × 2) + (info × 0.5)
 | Critical | 10 | 5 critical | -50 points |
 | High | 5 | 5 high | -25 points |
 | Medium | 2 | 5 medium | -10 points |
-| Info | 0.5 | 5 info | -2.5 points |
+| Info | 0 | 5 info | not counted |
 
 ### Score Ranges
 
@@ -577,14 +574,17 @@ graph LR
     Findings --> JSON["JSON Export<br/>{metadata, summary, findings}"]
     Findings --> MD["Markdown Export<br/># Report with tables"]
     Findings --> SARIF["SARIF v2.1 Export<br/>GitHub Code Scanning"]
+    Findings --> HTML["HTML Report<br/>Charts + ML Insights"]
 
     JSON --> DL1["Download .json"]
     MD --> DL2["Download .md"]
     SARIF --> DL3["Download .sarif"]
+    HTML --> DL4["Download .html"]
 
     style JSON fill:#3b82f6,color:#fff
     style MD fill:#8b5cf6,color:#fff
     style SARIF fill:#10b981,color:#fff
+    style HTML fill:#ec4899,color:#fff
 ```
 
 ### SARIF Integration
@@ -625,10 +625,21 @@ PR Annotations + Security Tab
 | Operation | Typical Time | Notes |
 |-----------|-------------|-------|
 | Single module analysis | 2–5ms | Regex scan of code lines |
-| Full Audit (9 modules) | 15–40ms | Excludes AI Review |
+| Full Audit (8 modules) | 15–40ms | Excludes AI Review |
 | AI Review Assistant | 5–15s | Claude API round-trip |
 | IndexedDB write | 5–20ms | Single submission |
 | Export generation | <5ms | JSON/MD/SARIF serialization |
 | GitHub commit fetch | 1–3s | Network dependent |
 
 All regex-based modules run synchronously in the browser's main thread. The AI Review Assistant is the only module that makes an external API call.
+
+---
+
+## Info Severity Policy
+
+Info-level findings are informational only and are excluded from:
+- Quality Score calculation
+- Finding counts in KPIs, tab headers, and submission labels
+- Default findings list display (hidden unless explicitly filtered)
+
+This ensures scores reflect actionable issues only (Critical, Medium, High) and prevents informational notices from inflating finding counts.

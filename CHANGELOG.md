@@ -4,6 +4,37 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [0.3.0] — Phase 3
+
+### Breaking Changes
+- **Removed Prompt Testability module** — Removed from registry, UI selectors, and all test profiles. The module produced excessive noise (one finding per commit when no prompt was provided) and its findings were not actionable for GitHub analysis.
+- **Info severity excluded from scores and counts** — Quality Score formula now uses only Critical×10 + High×5 + Medium×2 divided by actionable (non-Info) finding count. Info items are hidden from finding lists by default (still accessible via severity filter dropdown).
+
+### Rewritten Modules
+- **Differential Runner** — Complete rewrite with 5 targeted detectors: versioned function names (V2/New/Alt/Legacy), custom algorithm reimplementations (sort, deepClone, debounce, flatten), complex regex patterns (15+ chars), chained data transformations (map/filter/reduce chains), and duplicate function definitions. All findings include exact line number and code snippet.
+- **Mutation Scorer** — Tightened from 5 broad patterns to 3 focused ones: boundary comparisons (requiring if/while/for context), return value mutations, and conditional branches without else. Added per-pattern deduplication to prevent flooding.
+
+### New Features
+- **HTML report export for GitHub Analysis** — "Generate HTML Report" button produces a self-contained HTML file with SVG charts (severity pie, module bar, commit sparkline), KPI cards, ML insights, recommendations, and full findings table.
+- **Nav banner** — Slim gradient background (blue-to-indigo) matching page banners.
+- **Page banners** — All pages reduced to single-line compact banners with inline subtitle.
+
+### UI Changes
+- **"Language" → "Source"** column in submission tables — Shows "GitHub: owner/repo" for GitHub analyses.
+- **Removed Actions column** from Submission History table on Trends page.
+- **Removed Info card** from QuickStats (4-column layout: Score, Critical, High, Medium).
+- **Info findings hidden** from Code Analysis Findings list and Analysis Results findings list by default.
+
+### Bug Fixes
+- **Score mismatch** — Quality Score now consistent between GitHub Analysis and Analysis Results pages (unified formula).
+- **SQL injection false positives** — Tightened regex to require SQL keywords near string interpolation.
+- **Mutation Scorer line 1** — Fixed by tightening regexes and deduplicating per pattern type.
+
+### Tests
+- 91 tests (up from 80) — added 11 tests for Differential Runner.
+
+---
+
 ## [0.2.0] — Phase 2
 
 ### New Modules

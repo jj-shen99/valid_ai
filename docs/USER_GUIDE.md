@@ -69,7 +69,7 @@ A quick list of your most recent analyses with scores and timestamps.
 - Supported languages: Python, JavaScript, TypeScript, Java, Go, C#
 
 ### AI Prompt (Optional)
-Enter the prompt you used to generate the code. This enables the **Prompt Testability** module to evaluate your prompt for testability characteristics.
+Enter the prompt you used to generate the code. This is stored with the submission for reference.
 
 ### Test Profiles
 
@@ -79,7 +79,7 @@ Pre-configured module selections for common use cases:
 |---------|---------|----------|
 | **Quick Scan** | Failure Mode, Hallucination | Fast sanity check (~5s) |
 | **Security Focus** | Security Probe, Hallucination | Security & compliance review |
-| **Full Audit** | All 10 modules | Comprehensive analysis |
+| **Full Audit** | All 9 modules | Comprehensive analysis |
 
 ### Module Selection
 
@@ -141,11 +141,13 @@ Click a finding card to expand it and see the full suggestion.
 
 ### Quick Stats
 At the top of findings, a summary bar shows:
-- Quality Score (severity-weighted)
-- Count of Critical, High, Medium, and Info findings
+- Quality Score (severity-weighted, excludes Info)
+- Count of Critical, High, and Medium findings
+
+Info-severity findings are hidden from the findings list by default. Use the severity filter dropdown to view them if needed.
 
 ### Export
-Use the Export panel to download results as JSON, Markdown, or SARIF.
+Use the Export panel to download results as JSON, Markdown, SARIF, or HTML report.
 
 ---
 
@@ -175,10 +177,9 @@ A line chart showing score progression and critical/high issue counts over time.
 ### Submission History Table
 A detailed table of all past submissions showing:
 - Date and time
-- Language / source
+- Source (shows "GitHub: owner/repo" for GitHub analyses, or code language)
 - Quality score (color-coded)
 - Modules used
-- Actions: view details, delete
 
 ---
 
@@ -245,12 +246,12 @@ Identifies performance risks:
 - **Excessive DOM manipulation** — Layout thrashing
 
 ### Differential Runner
-Identifies code suitable for differential testing:
-- Versioned function names (V2, New, Alt)
-- Standard algorithm re-implementations
-- Data transformation functions
-- Regex patterns (cross-engine differences)
-- Mathematical computations (floating-point variance)
+Detects code patterns that benefit from differential testing, with exact line numbers and code snippets:
+- **Versioned functions** — Names containing V2, New, Alt, Legacy, Deprecated (Medium)
+- **Custom algorithm reimplementations** — Custom sort, deepClone, debounce, flatten vs standard library (Medium)
+- **Complex regex patterns** — Regex with 15+ characters, prone to ReDoS and edge cases (Medium)
+- **Chained data transformations** — map/filter/reduce chains needing snapshot tests (Medium)
+- **Duplicate function definitions** — Same function name defined multiple times, likely refactor bug (High)
 
 ### Oracle Checker
 Validates code contracts and specifications:
@@ -261,21 +262,11 @@ Validates code contracts and specifications:
 - Error handlers that only log (missing error contracts)
 
 ### Mutation Scorer
-Analyzes code for mutation testing susceptibility:
-- Boundary comparison operators (< vs <=)
-- Arithmetic operators (+/- swap targets)
-- Boolean logic (negation targets)
-- Simple return values (true/false/0/1)
-- Conditional branches without else
+Analyzes code for mutation testing susceptibility with per-pattern deduplication:
+- **Boundary comparison operators** — `<` vs `<=` in if/while/for conditions (Medium)
+- **Return value mutation risk** — Simple returns like `return true/false/0/null` (Medium)
+- **Conditional branches without else** — Missing else means mutations may survive (Medium)
 - Produces a **Mutation Density Score** — percentage of lines that are mutation targets
-
-### Prompt Testability
-Evaluates AI prompt quality:
-- Edge case specification
-- Constraint clarity
-- Error semantics
-- Dependency injection patterns
-- Pure function requests
 
 ### AI Review Assistant
 Claude-powered code review (requires API key):
@@ -291,13 +282,15 @@ Claude-powered code review (requires API key):
 
 ### Quality Score Formula
 
-The quality score is severity-weighted:
+The quality score is severity-weighted, using only actionable (non-Info) findings:
 
 ```
-score = 100 - (critical × 10) - (high × 5) - (medium × 2) - (info × 0.5)
+actionable = findings where severity ≠ Info
+avgPenalty = (critical×10 + high×5 + medium×2) / actionable.length
+score = max(0, 100 − avgPenalty × 10)
 ```
 
-The score is clamped between 0 and 100.
+The score is clamped between 0 and 100. Info findings do not affect the score.
 
 | Score Range | Meaning |
 |-------------|---------|
@@ -309,9 +302,9 @@ The score is clamped between 0 and 100.
 
 ### Why Scores Vary
 - More modules selected = more patterns checked = potentially more findings
-- Info-level findings have minimal impact (0.5 points each)
+- Info-level findings are excluded from the score entirely
 - A single Critical finding costs 10 points
-- The Full Audit profile checks all modules and will typically produce more findings
+- The Full Audit profile checks all 9 modules and will typically produce more findings
 
 ---
 
@@ -358,10 +351,10 @@ In VS Code Settings, search for "ValidAI":
 ## Tips & Best Practices
 
 1. **Start with Quick Scan** — Get a fast overview before running Full Audit
-2. **Include your prompt** — The Prompt Testability module gives better results when it can analyze your original prompt
-3. **Use severity as a priority guide** — Fix Critical and High first; Info findings are informational
-4. **Track trends** — Run analyses regularly and use the Trends page to monitor improvement
-5. **Add your Claude API key** — The AI Review Assistant catches patterns that regex-based modules miss
-6. **Export as SARIF** — Integrate findings into your CI/CD pipeline via GitHub Code Scanning
+2. **Use severity as a priority guide** — Fix Critical and High first; Info findings are informational and hidden by default
+3. **Track trends** — Run analyses regularly and use the Trends page to monitor improvement
+4. **Add your Claude API key** — The AI Review Assistant catches patterns that regex-based modules miss
+5. **Export as SARIF** — Integrate findings into your CI/CD pipeline via GitHub Code Scanning
+6. **Generate HTML reports** — Use the "Generate HTML Report" button on GitHub Analysis for shareable, self-contained reports with charts
 7. **Analyze GitHub repos periodically** — Catch regressions in team repositories
 8. **Review module descriptions** — Each module's description in the selector helps you pick the right checks for your code type
