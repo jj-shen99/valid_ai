@@ -127,7 +127,7 @@ export default function AnalysisView({ onNavigate }) {
             <div className="flex items-center gap-2">
               <Database size={15} className="text-gray-400" />
               {isLive ? (
-                <span>Current Analysis {isRunning && <span className="text-blue-600">(running)</span>}</span>
+                <span>Latest Analysis {isRunning && <span className="text-blue-600">(running)</span>}</span>
               ) : (
                 <span className="truncate max-w-[180px]">{formatLabel(loadedSubmission).source} — {formatLabel(loadedSubmission).date}</span>
               )}
@@ -152,7 +152,7 @@ export default function AnalysisView({ onNavigate }) {
                     <Loader size={14} />
                   </div>
                   <div>
-                    <p className="text-sm font-medium">Current / Live Analysis</p>
+                    <p className="text-sm font-medium">Latest Analysis</p>
                     <p className="text-xs text-gray-500">{liveFindings.length} findings{isRunning ? ' — running' : ''}</p>
                   </div>
                 </button>
@@ -221,7 +221,7 @@ export default function AnalysisView({ onNavigate }) {
 
       {!loadingHistory && (
         <>
-          <QuickStats findings={sortedFindings} />
+          <QuickStats findings={sortedFindings} storedScore={!isLive && loadedSubmission ? loadedSubmission.score : undefined} />
 
           {displayModules.length > 0 && (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">

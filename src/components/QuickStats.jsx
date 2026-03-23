@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { AlertTriangle, AlertCircle, Info, HelpCircle } from 'lucide-react'
 
-export default function QuickStats({ findings }) {
+export default function QuickStats({ findings, storedScore }) {
   const [showFormula, setShowFormula] = useState(false)
   const critical = findings.filter(f => f.severity === 'Critical').length
   const high = findings.filter(f => f.severity === 'High').length
@@ -9,7 +9,8 @@ export default function QuickStats({ findings }) {
   const info = findings.filter(f => f.severity === 'Info').length
 
   const weighted = (critical * 10) + (high * 5) + (medium * 2) + (info * 0.5)
-  const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
+  const calculatedScore = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
+  const score = storedScore != null ? storedScore : calculatedScore
 
   return (
     <div className="space-y-2">

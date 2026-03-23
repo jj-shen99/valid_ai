@@ -14,7 +14,7 @@ const TEST_PROFILES = [
 
 export default function GitHubAnalysis() {
   const [analysisData, setAnalysisData] = useState(null)
-  const [findings, setFindings] = useState([])
+  const [localFindings, setLocalFindings] = useState([])
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState({ current: 0, total: 0 })
   const [error, setError] = useState('')
@@ -25,11 +25,14 @@ export default function GitHubAnalysis() {
   const addNotification = useStore((s) => s.addNotification)
   const addSubmission = useStore((s) => s.addSubmission)
   const persistFindings = useStore((s) => s.persistFindings)
+  const setGlobalFindings = useStore((s) => s.setFindings)
+  const clearFindings = useStore((s) => s.clearFindings)
 
   const handleAnalyze = async (data) => {
     setLoading(true)
     setError('')
-    setFindings([])
+    setLocalFindings([])
+    clearFindings()
     setProgress({ current: 0, total: data.commits.length })
 
     try {
@@ -54,7 +57,8 @@ export default function GitHubAnalysis() {
       }
 
       setAnalysisData(data)
-      setFindings(allFindings)
+      setLocalFindings(allFindings)
+      setGlobalFindings(allFindings)
 
       const crit = allFindings.filter(f => f.severity === 'Critical').length
       const hi = allFindings.filter(f => f.severity === 'High').length
@@ -164,7 +168,7 @@ export default function GitHubAnalysis() {
 
       {/* Analysis Results */}
       {analysisData && !loading && (
-        <AnalysisDetails analysisData={analysisData} findings={findings} />
+        <AnalysisDetails analysisData={analysisData} findings={localFindings} />
       )}
     </div>
   )
