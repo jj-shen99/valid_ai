@@ -6,7 +6,7 @@ export const oracleChecker = (code, language) => {
   const patterns = [
     {
       name: 'Missing input validation',
-      regex: /function\s+\w+\s*\([^)]+\)\s*\{(?!\s*(?:if|throw|assert))/,
+      regex: /function\s+(\w+)\s*\([^)]+\)\s*\{(?!\s*(?:if|throw|assert))/,
       severity: 'Medium',
       description: 'Function accepts parameters but has no visible input validation or precondition checks at entry.',
       suggestion: 'Add guard clauses or assertions at function entry to validate inputs. Define and enforce function contracts.',
@@ -19,15 +19,8 @@ export const oracleChecker = (code, language) => {
       suggestion: 'Ensure consistent return types across all paths. Use Result/Either types or throw typed errors instead of returning null.',
     },
     {
-      name: 'Assertion-free function',
-      regex: /function\s+\w+\s*\([^)]*\)\s*\{(?:(?!assert|expect|should|must|throw|if\s*\()[\s\S])*?\}/,
-      severity: 'Info',
-      description: 'Function body contains no assertions, contracts, or validation logic.',
-      suggestion: 'Add pre/post-condition assertions using assert() or invariant checks. These serve as executable specifications.',
-    },
-    {
       name: 'Unvalidated API response',
-      regex: /(?:fetch|axios|request)\s*\([\s\S]*?\.(?:json|data|body)(?!\s*\?\s*\.)/,
+      regex: /(?:fetch|axios|\.get|\.post)\s*\(.*\)\s*\.then|await\s+(?:fetch|axios)\s*\(.*\)(?!.*(?:schema|validate|zod|joi|assert))/,
       severity: 'High',
       description: 'API response data used without schema validation. External data can have unexpected shape.',
       suggestion: 'Validate API responses with a schema library (zod, joi, ajv). Never trust external data shapes.',
@@ -41,37 +34,32 @@ export const oracleChecker = (code, language) => {
     },
   ]
 
+  const seenPatterns = {}
+
   lines.forEach((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*') || trimmed.startsWith('#')) return
+
     patterns.forEach((pattern) => {
       if (pattern.regex.test(line)) {
-        findings.push({
-          id: `oracle-${idx}-${pattern.name}`,
-          module: 'oracle',
-          moduleName: 'Oracle Checker',
-          severity: pattern.severity,
-          category: pattern.name,
-          description: pattern.description,
-          lineNumber: idx + 1,
-          suggestion: pattern.suggestion,
-          timestamp: new Date().toISOString(),
-        })
+        if (!seenPatterns[pattern.name]) {
+          seenPatterns[pattern.name] = true
+          findings.push({
+            id: `oracle-${idx}-${pattern.name}`,
+            module: 'oracle',
+            moduleName: 'Oracle Checker',
+            severity: pattern.severity,
+            category: pattern.name,
+            description: `${pattern.description} (line ${idx + 1})`,
+            lineNumber: idx + 1,
+            codeSnippet: trimmed.substring(0, 120),
+            suggestion: pattern.suggestion,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     })
   })
-
-  if (findings.length === 0) {
-    findings.push({
-      id: 'oracle-clean',
-      module: 'oracle',
-      moduleName: 'Oracle Checker',
-      severity: 'Info',
-      category: 'No oracle issues detected',
-      description: 'No specification violation patterns found. Consider adding formal contracts for critical functions.',
-      lineNumber: 1,
-      suggestion: 'Add JSDoc @throws and @returns annotations. Consider design-by-contract patterns for business logic.',
-      timestamp: new Date().toISOString(),
-    })
-  }
 
   return findings
 }

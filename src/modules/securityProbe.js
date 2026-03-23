@@ -82,20 +82,29 @@ export const securityProbe = (code, language) => {
     },
   ]
 
+  const seenPatterns = {}
+
   lines.forEach((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*') || trimmed.startsWith('#')) return
+
     patterns.forEach((pattern) => {
       if (pattern.regex.test(line)) {
-        findings.push({
-          id: `sec-${idx}-${pattern.name}`,
-          module: 'security',
-          moduleName: 'Security Probe',
-          severity: pattern.severity,
-          category: pattern.name,
-          description: `${pattern.name}. OWASP: ${pattern.owasp}`,
-          lineNumber: idx + 1,
-          suggestion: pattern.suggestion,
-          timestamp: new Date().toISOString(),
-        })
+        if (!seenPatterns[pattern.name]) {
+          seenPatterns[pattern.name] = true
+          findings.push({
+            id: `sec-${idx}-${pattern.name}`,
+            module: 'security',
+            moduleName: 'Security Probe',
+            severity: pattern.severity,
+            category: pattern.name,
+            description: `${pattern.name} at line ${idx + 1}. OWASP: ${pattern.owasp}`,
+            lineNumber: idx + 1,
+            codeSnippet: trimmed.substring(0, 120),
+            suggestion: pattern.suggestion,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     })
   })

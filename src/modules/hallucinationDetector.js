@@ -27,24 +27,30 @@ export const hallucinationDetector = (code, language) => {
     methods.forEach(m => allValidAPIs.add(m))
   })
 
-  const functionCallPattern = /(\w+)\.(\w+)\s*\(/g
-  const methodCallPattern = /\.(\w+)\s*\(/g
+  const seenMethods = {}
 
   lines.forEach((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*') || trimmed.startsWith('#')) return
+
+    const functionCallPattern = /(\w+)\.(\w+)\s*\(/g
     let match
     
     while ((match = functionCallPattern.exec(line)) !== null) {
       const [, obj, method] = match
+      const key = `${obj}.${method}`
       
-      if (!allValidAPIs.has(method) && !isCommonMethod(method)) {
+      if (!allValidAPIs.has(method) && !isCommonMethod(method) && !seenMethods[key]) {
+        seenMethods[key] = true
         findings.push({
           id: `hall-${idx}-${method}`,
           module: 'hallucination',
           moduleName: 'Hallucination Detector',
           severity: 'High',
           category: 'Non-existent API call',
-          description: `Detected call to potentially non-existent method: ${obj}.${method}()`,
+          description: `Potentially non-existent method: ${obj}.${method}() at line ${idx + 1}. AI models sometimes hallucinate API methods that don't exist.`,
           lineNumber: idx + 1,
+          codeSnippet: trimmed.substring(0, 120),
           suggestion: `Verify that ${method} is a valid method on ${obj}. Check the official documentation for the correct API.`,
           timestamp: new Date().toISOString(),
         })

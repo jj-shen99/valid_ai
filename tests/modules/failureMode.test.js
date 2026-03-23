@@ -25,12 +25,13 @@ describe('failureModeScanner', () => {
     expect(found.severity).toBe('High')
   })
 
-  it('detects type coercion issue', () => {
+  it('detects type coercion issue in conditionals', () => {
     const code = 'if (x == null) { return }'
     const findings = failureModeScanner(code, 'javascript')
     const found = findings.find(f => f.category === 'Type coercion issue')
     expect(found).toBeDefined()
     expect(found.severity).toBe('Medium')
+    expect(found.codeSnippet).toBeDefined()
   })
 
   it('generates valid finding structure', () => {

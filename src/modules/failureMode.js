@@ -11,13 +11,6 @@ export const failureModeScanner = (code, language) => {
       suggestion: 'Use strict < comparison with .length. Off-by-one errors are the #1 AI-generated boundary bug.',
     },
     {
-      name: 'Missing null/undefined check',
-      regex: /(?<!\?\.)(\w+)\.(\w+)\s*(?:\(|=(?!=))/,
-      severity: 'High',
-      description: 'Property access or assignment without null/undefined guard. AI-generated code often skips defensive checks.',
-      suggestion: 'Add optional chaining (?.) or explicit null checks before property access. Consider using TypeScript strict mode.',
-    },
-    {
       name: 'Silent exception swallowing',
       regex: /catch\s*\(\s*\w*\s*\)\s*\{\s*\}/,
       severity: 'Critical',
@@ -33,9 +26,9 @@ export const failureModeScanner = (code, language) => {
     },
     {
       name: 'Type coercion issue',
-      regex: /[^!=]==[^=]/,
+      regex: /(?:if|while|return)\s*\(.*[^!=]==[^=]/,
       severity: 'Medium',
-      description: 'Loose equality (==) can produce unexpected results due to JavaScript type coercion rules.',
+      description: 'Loose equality (==) in a conditional can produce unexpected results due to JavaScript type coercion rules.',
       suggestion: 'Use strict equality (===) to avoid implicit type conversion. This prevents subtle comparison bugs.',
     },
     {
@@ -53,13 +46,6 @@ export const failureModeScanner = (code, language) => {
       suggestion: 'Remove dead code after the return statement or restructure the control flow.',
     },
     {
-      name: 'Magic number',
-      regex: /(?:if|while|for|return|===?|!==?|[+\-*/])\s*(?:(?<!\w)(?:[2-9]\d{2,}|1\d{3,})(?!\w))/,
-      severity: 'Info',
-      description: 'Unexplained numeric literal detected. Magic numbers reduce code readability and maintainability.',
-      suggestion: 'Extract magic numbers into named constants with descriptive names (e.g., MAX_RETRIES, TIMEOUT_MS).',
-    },
-    {
       name: 'Implicit global variable',
       regex: /^\s+(\w+)\s*=\s*(?!.*(?:const|let|var|function|class|import))/,
       severity: 'High',
@@ -68,20 +54,29 @@ export const failureModeScanner = (code, language) => {
     },
   ]
 
+  const seenPatterns = {}
+
   lines.forEach((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*')) return
+
     patterns.forEach((pattern) => {
       if (pattern.regex.test(line)) {
-        findings.push({
-          id: `fm-${idx}-${pattern.name}`,
-          module: 'failureMode',
-          moduleName: 'Failure Mode Scanner',
-          severity: pattern.severity,
-          category: pattern.name,
-          description: pattern.description,
-          lineNumber: idx + 1,
-          suggestion: pattern.suggestion,
-          timestamp: new Date().toISOString(),
-        })
+        if (!seenPatterns[pattern.name]) {
+          seenPatterns[pattern.name] = true
+          findings.push({
+            id: `fm-${idx}-${pattern.name}`,
+            module: 'failureMode',
+            moduleName: 'Failure Mode Scanner',
+            severity: pattern.severity,
+            category: pattern.name,
+            description: `${pattern.description} (line ${idx + 1})`,
+            lineNumber: idx + 1,
+            codeSnippet: trimmed,
+            suggestion: pattern.suggestion,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     })
   })

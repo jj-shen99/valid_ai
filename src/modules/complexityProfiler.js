@@ -61,20 +61,29 @@ export const complexityProfiler = (code, language) => {
     },
   ]
 
+  const seenPatterns = {}
+
   lines.forEach((line, idx) => {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('//') || trimmed.startsWith('*') || trimmed.startsWith('/*') || trimmed.startsWith('#')) return
+
     patterns.forEach((pattern) => {
       if (pattern.regex.test(line)) {
-        findings.push({
-          id: `comp-${idx}-${pattern.name}`,
-          module: 'complexity',
-          moduleName: 'Complexity Profiler',
-          severity: pattern.severity,
-          category: pattern.name,
-          description: pattern.description,
-          lineNumber: idx + 1,
-          suggestion: pattern.suggestion,
-          timestamp: new Date().toISOString(),
-        })
+        if (!seenPatterns[pattern.name]) {
+          seenPatterns[pattern.name] = true
+          findings.push({
+            id: `comp-${idx}-${pattern.name}`,
+            module: 'complexity',
+            moduleName: 'Complexity Profiler',
+            severity: pattern.severity,
+            category: pattern.name,
+            description: `${pattern.description} (line ${idx + 1})`,
+            lineNumber: idx + 1,
+            codeSnippet: trimmed.substring(0, 120),
+            suggestion: pattern.suggestion,
+            timestamp: new Date().toISOString(),
+          })
+        }
       }
     })
   })
