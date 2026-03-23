@@ -7,16 +7,16 @@ import { getAllSubmissions, getFindingsBySubmission } from '../utils/db'
 import { Loader, AlertCircle, ChevronDown, Clock, Github, FileText, Database } from 'lucide-react'
 
 const MODULES = {
-  failureMode: { name: 'Failure Mode Scanner', icon: '🔍' },
-  security: { name: 'Security Probe', icon: '🔒' },
-  hallucination: { name: 'Hallucination Detector', icon: '👻' },
-  oracle: { name: 'Oracle Checker', icon: '📋' },
-  complexity: { name: 'Complexity Profiler', icon: '📊' },
-  mutation: { name: 'Mutation Scorer', icon: '🧬' },
-  property: { name: 'Property Generator', icon: '🎯' },
-  differential: { name: 'Differential Runner', icon: '⚖️' },
-  prompt: { name: 'Prompt Testability', icon: '📝' },
-  aiReview: { name: 'AI Review Assistant', icon: '🤖' },
+  failureMode: { name: 'Failure Mode Scanner', icon: '🔍', desc: 'Detects off-by-one errors, missing null/undefined checks, silent exception swallowing, unbounded loops, and type coercion issues common in AI-generated code.' },
+  security: { name: 'Security Probe', icon: '🔒', desc: 'Scans for OWASP Top 10 vulnerabilities including SQL injection, XSS, weak cryptography, hardcoded credentials, command injection, and insecure deserialization.' },
+  hallucination: { name: 'Hallucination Detector', icon: '👻', desc: 'Identifies calls to non-existent or hallucinated API methods by comparing against known JavaScript and Python standard library APIs.' },
+  oracle: { name: 'Oracle Checker', icon: '📋', desc: 'Verifies input validation patterns, return type consistency, and contract adherence to ensure code meets expected behavioral specifications.' },
+  complexity: { name: 'Complexity Profiler', icon: '📊', desc: 'Flags nested loops, unbounded recursion, inefficient sort patterns, full table scans, and memory accumulation issues that impact performance.' },
+  mutation: { name: 'Mutation Scorer', icon: '🧬', desc: 'Identifies boundary operators, boolean negation targets, and arithmetic mutation points to assess how well test suites can catch semantic changes.' },
+  property: { name: 'Property Generator', icon: '🎯', desc: 'Analyzes function signatures and structure to suggest property-based tests, invariants, and testability improvements.' },
+  differential: { name: 'Differential Runner', icon: '⚖️', desc: 'Detects versioned functions and algorithm alternatives to enable comparison testing between different implementations.' },
+  prompt: { name: 'Prompt Testability', icon: '📝', desc: 'Evaluates prompt structure for edge cases, constraint coverage, error semantics, and ambiguity that could affect AI code generation quality.' },
+  aiReview: { name: 'AI Review Assistant', icon: '🤖', desc: 'Uses Claude API for deep anti-pattern detection, architectural review, and context-aware suggestions beyond regex-based analysis.' },
 }
 
 export default function AnalysisView({ onNavigate }) {
@@ -230,13 +230,18 @@ export default function AnalysisView({ onNavigate }) {
                 if (!module) return null
                 const status = isLive ? (moduleProgress[moduleName] || 'pending') : 'complete'
                 return (
-                  <div key={moduleName} className="bg-white border border-gray-200 rounded-lg p-3">
+                  <div key={moduleName} className="bg-white border border-gray-200 rounded-lg p-3 group relative">
                     <div className="flex items-start justify-between mb-1">
                       <span className="text-xl">{module.icon}</span>
                       {status === 'running' && <Loader className="animate-spin text-blue-600" size={14} />}
                       {status === 'complete' && <span className="text-green-600 text-xs font-medium">✓</span>}
                     </div>
                     <h3 className="font-medium text-gray-900 text-xs">{module.name}</h3>
+                    <p className="text-[10px] text-gray-400 mt-1 leading-tight line-clamp-2">{module.desc}</p>
+                    <div className="hidden group-hover:block absolute left-0 top-full mt-1 z-30 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl">
+                      <p className="font-semibold mb-1">{module.name}</p>
+                      <p className="text-gray-300 leading-relaxed">{module.desc}</p>
+                    </div>
                   </div>
                 )
               })}

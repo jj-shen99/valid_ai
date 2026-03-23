@@ -9,7 +9,8 @@ export default function QuickStats({ findings, storedScore }) {
   const info = findings.filter(f => f.severity === 'Info').length
 
   const weighted = (critical * 10) + (high * 5) + (medium * 2) + (info * 0.5)
-  const calculatedScore = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
+  const avgPenalty = findings.length > 0 ? weighted / findings.length : 0
+  const calculatedScore = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
   const score = storedScore != null ? storedScore : calculatedScore
 
   return (
@@ -61,9 +62,10 @@ export default function QuickStats({ findings, storedScore }) {
     {showFormula && (
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-xs text-gray-700">
         <p className="font-semibold mb-1">Quality Score Formula</p>
-        <p className="font-mono text-gray-600 mb-2">Score = max(0, 100 − (Critical×10 + High×5 + Medium×2 + Info×0.5))</p>
+        <p className="font-mono text-gray-600 mb-2">Score = max(0, 100 − (avgPenalty × 10))</p>
+        <p className="font-mono text-gray-600 mb-1">avgPenalty = (Critical×10 + High×5 + Medium×2 + Info×0.5) / totalFindings</p>
         <p className="text-gray-500 mb-1">
-          Your calculation: 100 − ({critical}×10 + {high}×5 + {medium}×2 + {info}×0.5) = 100 − {weighted} = <span className="font-semibold">{score}%</span>
+          Your calculation: ({critical}×10 + {high}×5 + {medium}×2 + {info}×0.5) = {weighted} / {findings.length || 1} = {avgPenalty.toFixed(1)} → 100 − {(avgPenalty * 10).toFixed(0)} = <span className="font-semibold">{calculatedScore}%</span>
         </p>
         <div className="flex gap-4 mt-1.5 text-gray-500">
           <span>90–100 Excellent</span>

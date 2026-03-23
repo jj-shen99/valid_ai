@@ -81,7 +81,8 @@ export default function CodeSubmission() {
       const medium = findings.filter(f => f.severity === 'Medium').length
       const infoCount = findings.filter(f => f.severity === 'Info').length
       const weighted = (critical * 10) + (high * 5) + (medium * 2) + (infoCount * 0.5)
-      const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
+      const avgPenalty = findings.length > 0 ? weighted / findings.length : 0
+      const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
 
       setAnalysisFindings(findings)
       setAnalysisScore(Math.min(100, score))

@@ -104,7 +104,8 @@ export const exportAsHTML = (findings, metadata) => {
   const medium = findings.filter(f => f.severity === 'Medium').length
   const info = findings.filter(f => f.severity === 'Info').length
   const weighted = (critical * 10) + (high * 5) + (medium * 2) + (info * 0.5)
-  const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - weighted))
+  const avgPenalty = findings.length > 0 ? weighted / findings.length : 0
+  const score = findings.length === 0 ? 100 : Math.max(0, Math.round(100 - avgPenalty * 10))
 
   // Module counts for bar chart
   const moduleCounts = {}
