@@ -78,8 +78,12 @@ export default function CodeSubmission() {
         timestamp: new Date().toISOString(),
         score: Math.min(100, score),
         findings,
+        source: 'code',
       }
-      addSubmission(submission)
+      const saved = await addSubmission(submission)
+      if (saved?.id) {
+        await useStore.getState().persistFindings(findings, saved.id)
+      }
     } catch (error) {
       console.error('Analysis error:', error)
       alert('Error running analysis: ' + error.message)

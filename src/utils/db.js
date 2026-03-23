@@ -113,6 +113,15 @@ export async function getSetting(key) {
   })
 }
 
+export async function getSubmission(id) {
+  const store = await tx('submissions')
+  return new Promise((resolve, reject) => {
+    const req = store.get(id)
+    req.onsuccess = () => resolve(req.result || null)
+    req.onerror = () => reject(req.error)
+  })
+}
+
 export async function clearAllData() {
   const db = await openDB()
   const storeNames = ['submissions', 'findings']
