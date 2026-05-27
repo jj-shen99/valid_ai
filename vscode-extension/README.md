@@ -12,14 +12,14 @@ Test AI-generated code directly in VS Code using ValidAI analysis modules.
 ## Installation
 
 1. Install the extension from the VS Code Marketplace
-2. Ensure ValidAI web UI is running (default: http://localhost:3600)
+2. Ensure ValidAI web UI is running (default: http://localhost:5200)
 3. Right-click on code files to analyze
 
 ## Configuration
 
 Open VS Code Settings and search for "ValidAI":
 
-- `validai.webUIUrl`: URL of the ValidAI web interface (default: http://localhost:3600)
+- `validai.webUIUrl`: URL of the ValidAI web interface (default: http://localhost:5200)
 - `validai.enableDiagnostics`: Show findings as VS Code diagnostics (default: true)
 
 ## Usage

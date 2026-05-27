@@ -43,7 +43,7 @@ npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:3600`
+The application will be available at `http://localhost:5200`
 
 ### Build for Production
 
@@ -108,7 +108,7 @@ npm run compile
 
 - Right-click any file: **ValidAI: Analyze Current File**
 - Select code and right-click: **ValidAI: Analyze Selection**
-- Default URL: `http://localhost:3600`
+- Default URL: `http://localhost:5200`
 
 ## Contributing
 

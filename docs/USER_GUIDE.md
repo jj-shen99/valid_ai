@@ -28,7 +28,7 @@ npm install
 npm run dev
 ```
 
-Open your browser to `http://localhost:3600`. The application loads with the **Dashboard** page.
+Open your browser to `http://localhost:5200`. The application loads with the **Dashboard** page.
 
 ### First Analysis
 
@@ -338,7 +338,7 @@ Install the compiled VSIX in VS Code via Extensions > Install from VSIX.
 
 ### Configuration
 In VS Code Settings, search for "ValidAI":
-- `validai.webUIUrl` — URL of the web interface (default: `http://localhost:3600`)
+- `validai.webUIUrl` — URL of the web interface (default: `http://localhost:5200`)
 - `validai.enableDiagnostics` — Show findings as VS Code Problems (default: true)
 
 ### Usage
