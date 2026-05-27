@@ -614,8 +614,8 @@ PR Annotations + Security Tab
 | Vite | Over Webpack | Faster dev server, native ESM, simpler config |
 | Regex patterns | Over AST parsing | Simpler, language-agnostic, fast execution |
 | Web Crypto API | Over JS crypto libs | Native browser API, hardware-accelerated |
-| Recharts | Over D3 | React-native, declarative, easier to maintain |
-| CodeMirror 6 | Over Monaco | Lighter weight, better mobile support |
+| SVG Charts + Recharts | Over D3 | Custom SVG charts for Trends pages; Recharts lazy-loaded for GitHub Analysis |
+| CodeMirror 6 | Over Monaco | Lighter weight, lazy-loaded language packs, better mobile support |
 | Vitest | Over Jest | Native Vite integration, faster test execution |
 
 ---
