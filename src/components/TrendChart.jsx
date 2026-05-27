@@ -1,5 +1,5 @@
 import React from 'react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import SVGLineChart from './charts/SVGLineChart'
 
 export default function TrendChart({ submissions }) {
   if (submissions.length === 0) {
@@ -20,18 +20,15 @@ export default function TrendChart({ submissions }) {
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-6">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">Quality Trend</h3>
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="score" stroke="#3b82f6" name="Quality Score" />
-          <Line type="monotone" dataKey="critical" stroke="#ef4444" name="Critical Issues" />
-          <Line type="monotone" dataKey="high" stroke="#f97316" name="High Issues" />
-        </LineChart>
-      </ResponsiveContainer>
+      <SVGLineChart
+        data={data}
+        lines={[
+          { key: 'score', label: 'Quality Score', color: 'blue' },
+          { key: 'critical', label: 'Critical Issues', color: 'red' },
+          { key: 'high', label: 'High Issues', color: 'orange' },
+        ]}
+        height={300}
+      />
     </div>
   )
 }

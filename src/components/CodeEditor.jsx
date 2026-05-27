@@ -1,19 +1,38 @@
 import React, { useEffect, useRef } from 'react'
 import { EditorView, basicSetup } from 'codemirror'
 import { EditorState } from '@codemirror/state'
-import { python } from '@codemirror/lang-python'
-import { javascript } from '@codemirror/lang-javascript'
-import { java } from '@codemirror/lang-java'
-import { go } from '@codemirror/lang-go'
-import { cpp } from '@codemirror/lang-cpp'
 
-const languageMap = {
-  python: python(),
-  javascript: javascript(),
-  typescript: javascript({ typescript: true }),
-  java: java(),
-  go: go(),
-  csharp: cpp(),
+const loadLanguage = async (lang) => {
+  switch (lang) {
+    case 'python': {
+      const { python } = await import('@codemirror/lang-python')
+      return python()
+    }
+    case 'javascript': {
+      const { javascript } = await import('@codemirror/lang-javascript')
+      return javascript()
+    }
+    case 'typescript': {
+      const { javascript } = await import('@codemirror/lang-javascript')
+      return javascript({ typescript: true })
+    }
+    case 'java': {
+      const { java } = await import('@codemirror/lang-java')
+      return java()
+    }
+    case 'go': {
+      const { go } = await import('@codemirror/lang-go')
+      return go()
+    }
+    case 'csharp': {
+      const { cpp } = await import('@codemirror/lang-cpp')
+      return cpp()
+    }
+    default: {
+      const { python } = await import('@codemirror/lang-python')
+      return python()
+    }
+  }
 }
 
 export default function CodeEditor({ value, onChange, language }) {
@@ -22,29 +41,35 @@ export default function CodeEditor({ value, onChange, language }) {
 
   useEffect(() => {
     if (!editorRef.current) return
+    let destroyed = false
 
-    const state = EditorState.create({
-      doc: value,
-      extensions: [
-        basicSetup,
-        languageMap[language] || python(),
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            onChange(update.state.doc.toString())
-          }
-        }),
-      ],
+    loadLanguage(language).then((langExtension) => {
+      if (destroyed || !editorRef.current) return
+
+      const state = EditorState.create({
+        doc: value,
+        extensions: [
+          basicSetup,
+          langExtension,
+          EditorView.updateListener.of((update) => {
+            if (update.docChanged) {
+              onChange(update.state.doc.toString())
+            }
+          }),
+        ],
+      })
+
+      const view = new EditorView({
+        state,
+        parent: editorRef.current,
+      })
+
+      viewRef.current = view
     })
-
-    const view = new EditorView({
-      state,
-      parent: editorRef.current,
-    })
-
-    viewRef.current = view
 
     return () => {
-      view.destroy()
+      destroyed = true
+      if (viewRef.current) viewRef.current.destroy()
     }
   }, [language, onChange])
 

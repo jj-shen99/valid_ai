@@ -2,11 +2,12 @@ import React, { useMemo } from 'react'
 import { useStore } from '../store'
 import TrendChart from '../components/TrendChart'
 import SubmissionHistory from '../components/SubmissionHistory'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area, Legend } from 'recharts'
+import SVGLineChart from '../components/charts/SVGLineChart'
+import SVGBarChart from '../components/charts/SVGBarChart'
+import SVGPieChart from '../components/charts/SVGPieChart'
 import { TrendingUp, TrendingDown, Minus, AlertTriangle, Shield, Bug, Zap, Github, FileText } from 'lucide-react'
 
 const SEVERITY_COLORS = { Critical: '#ef4444', High: '#f97316', Medium: '#eab308', Info: '#3b82f6' }
-const MODULE_COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308', '#22c55e', '#06b6d4']
 
 export default function TrendHistory() {
   const submissions = useStore((state) => state.submissions)
@@ -130,17 +131,14 @@ export default function TrendHistory() {
           {scoreOverTime.length === 0 ? (
             <p className="text-sm text-gray-400 py-8 text-center">No data yet</p>
           ) : (
-            <ResponsiveContainer width="100%" height={240}>
-              <AreaChart data={scoreOverTime}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Area type="monotone" dataKey="score" stroke="#3b82f6" fill="#dbeafe" name="Quality Score" />
-                <Area type="monotone" dataKey="findings" stroke="#f97316" fill="#ffedd5" name="Findings" />
-              </AreaChart>
-            </ResponsiveContainer>
+            <SVGLineChart
+              data={scoreOverTime}
+              lines={[
+                { key: 'score', label: 'Quality Score', color: 'blue' },
+                { key: 'findings', label: 'Findings', color: 'orange' },
+              ]}
+              height={240}
+            />
           )}
         </div>
 
@@ -150,27 +148,14 @@ export default function TrendHistory() {
           {severityPieData.length === 0 ? (
             <p className="text-sm text-gray-400 py-8 text-center">No findings yet</p>
           ) : (
-            <div className="flex items-center gap-6">
-              <ResponsiveContainer width="50%" height={200}>
-                <PieChart>
-                  <Pie data={severityPieData} cx="50%" cy="50%" innerRadius={45} outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                    {severityPieData.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-2">
-                {severityPieData.map((d) => (
-                  <div key={d.name} className="flex items-center gap-2 text-sm">
-                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: d.color }} />
-                    <span className="text-gray-700">{d.name}</span>
-                    <span className="font-semibold text-gray-900">{d.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SVGPieChart
+              data={severityPieData}
+              dataKey="value"
+              nameKey="name"
+              colorKey="color"
+              size={200}
+              innerRadius={45}
+            />
           )}
         </div>
       </div>
@@ -181,19 +166,13 @@ export default function TrendHistory() {
         {moduleFrequency.length === 0 ? (
           <p className="text-sm text-gray-400 py-8 text-center">No module data yet</p>
         ) : (
-          <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={moduleFrequency} layout="vertical" margin={{ left: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis type="number" tick={{ fontSize: 11 }} />
-              <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={130} />
-              <Tooltip />
-              <Bar dataKey="count" name="Findings" radius={[0, 4, 4, 0]}>
-                {moduleFrequency.map((_, i) => (
-                  <Cell key={i} fill={MODULE_COLORS[i % MODULE_COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <SVGBarChart
+            data={moduleFrequency}
+            dataKey="count"
+            nameKey="name"
+            layout="vertical"
+            height={260}
+          />
         )}
       </div>
 

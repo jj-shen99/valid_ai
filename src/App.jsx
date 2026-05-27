@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { useStore } from './store'
 import Dashboard from './pages/Dashboard'
-import CodeSubmission from './pages/CodeSubmission'
-import AnalysisView from './pages/AnalysisView'
-import Settings from './pages/Settings'
-import TrendHistory from './pages/TrendHistory'
-import GitHubAnalysis from './pages/GitHubAnalysis'
-import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X } from 'lucide-react'
+import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X, Loader2 } from 'lucide-react'
+
+const CodeSubmission = lazy(() => import('./pages/CodeSubmission'))
+const AnalysisView = lazy(() => import('./pages/AnalysisView'))
+const Settings = lazy(() => import('./pages/Settings'))
+const TrendHistory = lazy(() => import('./pages/TrendHistory'))
+const GitHubAnalysis = lazy(() => import('./pages/GitHubAnalysis'))
 
 const NAV = [
   { id: 'dashboard', label: 'Dashboard', icon: Home },
@@ -91,11 +92,13 @@ export default function App() {
         {/* Page content */}
         <main className="flex-1 overflow-y-auto px-6 pb-6">
           {page === 'dashboard' && <Dashboard dark={dark} />}
-          {page === 'submit' && <CodeSubmission />}
-          {page === 'analysis' && <AnalysisView onNavigate={setPage} />}
-          {page === 'trends' && <TrendHistory />}
-          {page === 'github' && <GitHubAnalysis />}
-          {page === 'settings' && <Settings />}
+          <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 size={24} className="animate-spin text-blue-500" /><span className="ml-2 text-sm text-gray-500">Loading…</span></div>}>
+            {page === 'submit' && <CodeSubmission />}
+            {page === 'analysis' && <AnalysisView onNavigate={setPage} />}
+            {page === 'trends' && <TrendHistory />}
+            {page === 'github' && <GitHubAnalysis />}
+            {page === 'settings' && <Settings />}
+          </Suspense>
         </main>
       </div>
 

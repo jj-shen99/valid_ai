@@ -11,7 +11,8 @@ export const propertyGenerator = (code, language) => {
     const funcMatch = functionPattern.exec(line)
     if (funcMatch) {
       const funcName = funcMatch[1] || funcMatch[3]
-      const params = (funcMatch[2] || funcMatch[4]).split(',').filter(p => p.trim())
+      const paramStr = funcMatch[2] ?? funcMatch[4] ?? ''
+      const params = paramStr.split(',').filter(p => p.trim())
 
       if (params.length > 3) {
         findings.push({

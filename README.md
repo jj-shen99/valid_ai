@@ -91,7 +91,7 @@ valid_ai/
 │   ├── utils/             # exporters, db, crypto, githubIntegration
 │   ├── store.js           # Zustand state management
 │   └── App.jsx            # Main app with routing and navigation
-├── tests/                 # Vitest unit tests (105 tests)
+├── tests/                 # Vitest unit + regression tests (227 tests)
 ├── docs/                  # User Guide, Architecture
 ├── vscode-extension/      # VS Code extension prototype
 ├── vite.config.js
