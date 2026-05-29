@@ -28,6 +28,10 @@ ValidAI is an open-source framework designed to systematically test AI-generated
 - **Encrypted Storage** — AES-256 encrypted API keys with IndexedDB persistence
 - **VS Code Extension** — Analyze code directly in your editor
 
+## Book
+
+This project is the companion codebase for **[Testing AI-Generated Code](https://www.amazon.com/dp/B0GTXN28BF)** — a practical guide to validating, testing, and securing code produced by AI models.
+
 ## Quick Start
 
 ### Prerequisites

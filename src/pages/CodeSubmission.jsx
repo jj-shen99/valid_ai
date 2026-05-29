@@ -7,7 +7,7 @@ import FindingCard from '../components/FindingCard'
 import ExportPanel from '../components/ExportPanel'
 import { runAnalysis, runAnalysisTimed } from '../modules/analysisEngine'
 import { attachAutoFixes } from '../utils/autoFixer'
-import { Play, Upload, Loader, ChevronDown, ChevronUp, Layers, List, FolderUp, Search, FileDown } from 'lucide-react'
+import { Play, Upload, Loader, ChevronDown, ChevronUp, Layers, List, FolderUp, Search, FileDown, Zap, Shield, Scan } from 'lucide-react'
 import { analyzeBatch, readFilesFromInput } from '../utils/batchAnalyzer'
 import { groupFindings, deduplicateFindings } from '../utils/findingGrouper'
 import { getProfiles, addProfile, removeProfile } from '../utils/profileManager'
@@ -31,24 +31,9 @@ const LANGUAGE_OPTIONS = [
 ]
 
 const TEST_PROFILES = [
-  {
-    id: 'quick',
-    name: 'Quick Scan',
-    description: '~2 minutes',
-    modules: ['failureMode', 'hallucination'],
-  },
-  {
-    id: 'security',
-    name: 'Security Focus',
-    description: 'Security & compliance',
-    modules: ['security', 'hallucination'],
-  },
-  {
-    id: 'full',
-    name: 'Full Audit',
-    description: 'All modules',
-    modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'typescript', 'accessibility', 'dependency', 'customRules', 'aiReview'],
-  },
+  { id: 'quick', name: 'Quick Scan', desc: 'Fast analysis (~2 min)', modules: ['failureMode', 'hallucination'], icon: Zap, color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
+  { id: 'security', name: 'Security Focus', desc: 'Security & compliance', modules: ['security', 'hallucination'], icon: Shield, color: 'text-red-600 bg-red-50 border-red-200' },
+  { id: 'full', name: 'Full Audit', desc: 'All 13 modules', modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'typescript', 'accessibility', 'dependency', 'customRules', 'aiReview'], icon: Scan, color: 'text-blue-600 bg-blue-50 border-blue-200' },
 ]
 
 export default function CodeSubmission() {
@@ -316,16 +301,22 @@ export default function CodeSubmission() {
             )}
 
             <div className="space-y-2">
-              {TEST_PROFILES.map((profile) => (
-                <button
-                  key={profile.id}
-                  onClick={() => handleApplyProfile(profile)}
-                  className="w-full text-left px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  <div className="font-medium text-gray-900">{profile.name}</div>
-                  <div className="text-xs text-gray-600">{profile.description}</div>
-                </button>
-              ))}
+              {TEST_PROFILES.map((profile) => {
+                const Icon = profile.icon
+                return (
+                  <button
+                    key={profile.id}
+                    onClick={() => handleApplyProfile(profile)}
+                    className={`w-full text-left px-4 py-3 border rounded-lg transition-colors ${profile.color} hover:opacity-80`}
+                  >
+                    <div className="flex items-center gap-2">
+                      <Icon size={16} />
+                      <span className="font-medium text-sm">{profile.name}</span>
+                    </div>
+                    <p className="text-xs mt-0.5 opacity-75">{profile.desc}</p>
+                  </button>
+                )
+              })}
               {userProfiles.map((profile) => (
                 <div key={profile.id} className="flex items-center gap-2">
                   <button
