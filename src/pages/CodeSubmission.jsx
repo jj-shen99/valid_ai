@@ -33,7 +33,7 @@ const LANGUAGE_OPTIONS = [
 const TEST_PROFILES = [
   { id: 'quick', name: 'Quick Scan', desc: 'Fast analysis (~2 min)', modules: ['failureMode', 'hallucination'], icon: Zap, color: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
   { id: 'security', name: 'Security Focus', desc: 'Security & compliance', modules: ['security', 'hallucination'], icon: Shield, color: 'text-red-600 bg-red-50 border-red-200' },
-  { id: 'full', name: 'Full Audit', desc: 'All 13 modules', modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'typescript', 'accessibility', 'dependency', 'customRules', 'aiReview'], icon: Scan, color: 'text-blue-600 bg-blue-50 border-blue-200' },
+  { id: 'full', name: 'Full Audit', desc: 'All 14 modules', modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'typescript', 'accessibility', 'dependency', 'deadCode', 'customRules', 'aiReview'], icon: Scan, color: 'text-blue-600 bg-blue-50 border-blue-200' },
 ]
 
 export default function CodeSubmission() {

@@ -19,6 +19,7 @@ const MODULES = {
   typescript: { name: 'TypeScript Analyzer', icon: '🔷', desc: 'Detects TS-specific anti-patterns: any abuse, missing return types, unsafe assertions, @ts-ignore suppression, and non-null assertion overuse.' },
   accessibility: { name: 'Accessibility Analyzer', icon: '♿', desc: 'Detects a11y issues: missing alt text, empty links, form labels, keyboard accessibility, ARIA misuse, and color-only indicators.' },
   dependency: { name: 'Dependency Scanner', icon: '📦', desc: 'Detects vulnerable, deprecated, or compromised package imports and dependency patterns.' },
+  deadCode: { name: 'Dead Code Detector', icon: '💀', desc: 'Finds unused variables, unreachable code, unused imports, empty functions, and commented-out code.' },
   customRules: { name: 'Custom Rules', icon: '📝', desc: 'User-defined regex-based rules configured in Settings. Create custom patterns to enforce team coding standards.' },
   aiReview: { name: 'AI Review Assistant', icon: '🤖', desc: 'Uses Claude API for deep anti-pattern detection, architectural review, and context-aware suggestions beyond regex-based analysis.' },
 }

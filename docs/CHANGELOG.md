@@ -4,6 +4,36 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [1.1.0] — Phase 11
+
+### Fixes
+- **README** — Consolidated duplicate book sections into single Links entry with Amazon URL. Updated module list from 9 to 14 with full descriptions.
+
+### New Features
+- **Dead Code Detector** — 14th analysis module detecting unused variables, unreachable code after return, empty function bodies, commented-out code, and unused imports. Registered in engine, module selector, all Full Audit profiles.
+- **Code Duplication Finder** — Sliding-window duplicate block detection using normalized line hashing. Reports duplicate blocks with line numbers, duplication percentage, and duplication score. Markdown report formatter.
+- **Finding Timeline** — Tracks per-finding occurrence history across analysis runs. Records first seen, last seen, occurrence count. Identifies recurring findings (≥3 occurrences), resolved findings, and new findings. Stats summary with most frequent and oldest unresolved.
+- **Analysis Comparison Diff Export** — Compares two analysis runs identifying new, resolved, and persistent findings. Exports full markdown diff report with score delta table, resolved/new/persistent sections.
+- **Quality Gate** — Configurable severity thresholds (minScore, maxCritical, maxHigh, maxMedium, maxTotal) with pass/fail/warn evaluation. Persistent threshold storage. Default thresholds: 70% score, 0 critical, 3 high, 10 medium, 20 total.
+
+### New Files
+- `src/modules/deadCodeDetector.js` — Dead code detection module (5 patterns + empty function scan).
+- `src/utils/duplicationFinder.js` — Duplicate block detection, scoring, and report formatting.
+- `src/utils/findingTimeline.js` — Finding occurrence tracking and analysis.
+- `src/utils/diffExporter.js` — Analysis comparison and markdown diff export.
+- `src/utils/qualityGate.js` — Configurable quality gate with threshold management.
+
+### Tests — 679 total (up from 601)
+- **Dead Code Detector** (13 tests) — Pattern detection, ignore list, metadata, clean code.
+- **Duplication Finder** (11 tests) — Block detection, scoring, report, caps, empty/short code.
+- **Finding Timeline** (15 tests) — CRUD, recurring, resolved, new, stats, persistence, caps.
+- **Diff Exporter** (12 tests) — Comparison, markdown export, empty sets, metadata.
+- **Quality Gate** (15 tests) — Threshold CRUD, gate evaluation, formatting, custom thresholds.
+- **Integration** (5 tests) — Cross-feature pipelines, engine registration, Full Audit 14-module completeness.
+- **Structured** (9 tests) — API contract validation for all new modules.
+
+---
+
 ## [1.0.0] — Phase 10 (Stable Release)
 
 ### Fixes

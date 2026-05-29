@@ -12,6 +12,7 @@ import { typescriptAnalyzer } from './typescriptAnalyzer'
 import { customRulesRunner } from './customRules'
 import { accessibilityAnalyzer } from './accessibilityAnalyzer'
 import { dependencyScanner } from './dependencyScanner'
+import { deadCodeDetector } from './deadCodeDetector'
 import { runWithTiming } from '../utils/perfTracker'
 
 const MODULE_REGISTRY = {
@@ -27,6 +28,7 @@ const MODULE_REGISTRY = {
   customRules: customRulesRunner,
   accessibility: accessibilityAnalyzer,
   dependency: dependencyScanner,
+  deadCode: deadCodeDetector,
   aiReview: aiReviewAssistant,
 }
 
@@ -237,6 +239,12 @@ export const getModuleInfo = (moduleName) => {
       name: 'Dependency Scanner',
       icon: '📦',
       description: 'Detects vulnerable, deprecated, or compromised package imports and dependency patterns in code.',
+      estimatedTime: '~1s',
+    },
+    deadCode: {
+      name: 'Dead Code Detector',
+      icon: '💀',
+      description: 'Finds unused variables, unreachable code after return, unused imports, empty functions, and commented-out code.',
       estimatedTime: '~1s',
     },
     customRules: {

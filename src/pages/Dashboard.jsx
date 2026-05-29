@@ -53,6 +53,7 @@ export default function Dashboard({ dark }) {
     { name: 'TypeScript Analyzer', status: true },
     { name: 'Accessibility Analyzer', status: true },
     { name: 'Dependency Scanner', status: true },
+    { name: 'Dead Code Detector', status: true },
     { name: 'Custom Rules', status: true },
     { name: 'AI Review Assistant', status: false },
   ]

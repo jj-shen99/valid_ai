@@ -4,11 +4,11 @@ A comprehensive web-based testing framework for validating AI-generated code acr
 
 ## Overview
 
-ValidAI is an open-source framework designed to systematically test AI-generated code for common failure patterns, security issues, and quality problems. It provides 9 specialized analysis modules that work together to catch bugs, hallucinations, and anti-patterns that AI models frequently introduce.
+ValidAI is an open-source framework designed to systematically test AI-generated code for common failure patterns, security issues, and quality problems. It provides 13 specialized analysis modules that work together to catch bugs, hallucinations, and anti-patterns that AI models frequently introduce.
 
 ## Key Features
 
-### 9 Analysis Modules
+### 13 Analysis Modules
 - **Failure Mode Scanner** — Off-by-one errors, silent exceptions, unbounded loops, type coercion, magic numbers, implicit globals
 - **Security Probe** — OWASP Top 10: SQL injection, XSS, hardcoded credentials, weak crypto, path traversal, disabled security controls
 - **Hallucination Detector** — Cross-references method calls against known APIs to detect non-existent or hallucinated functions
@@ -17,6 +17,10 @@ ValidAI is an open-source framework designed to systematically test AI-generated
 - **Differential Runner** — Versioned functions, duplicate definitions, custom algorithm re-implementations, complex regex, chained transformations
 - **Oracle Checker** — Missing input validation, inconsistent return types, unvalidated API responses, missing error contracts
 - **Mutation Scorer** — Boundary comparison operators, return value mutations, conditional branches without else, density scoring
+- **TypeScript Analyzer** — `any` abuse, missing return types, unsafe assertions, `@ts-ignore` suppression, non-null assertion overuse
+- **Accessibility Analyzer** — Missing alt text, empty links, form labels, keyboard accessibility, ARIA misuse, color-only indicators
+- **Dependency Scanner** — Vulnerable, deprecated, or compromised package imports and deprecated API patterns
+- **Custom Rules** — User-defined regex-based rules configured in Settings for team coding standards
 - **AI Review Assistant** — Claude-powered code review targeting AI anti-patterns (requires API key)
 
 ### Core Capabilities
@@ -27,10 +31,6 @@ ValidAI is an open-source framework designed to systematically test AI-generated
 - **Multiple Export Formats** — JSON, Markdown, SARIF v2.1, HTML reports
 - **Encrypted Storage** — AES-256 encrypted API keys with IndexedDB persistence
 - **VS Code Extension** — Analyze code directly in your editor
-
-## Book
-
-This project is the companion codebase for **[Testing AI-Generated Code](https://www.amazon.com/dp/B0GTXN28BF)** — a practical guide to validating, testing, and securing code produced by AI models.
 
 ## Quick Start
 
@@ -91,11 +91,11 @@ valid_ai/
 │   │                      # TrendHistory, GitHubAnalysis, Settings
 │   ├── components/        # CodeEditor, ModuleSelector, FindingCard,
 │   │                      # ExportPanel, QuickStats, TrendChart, etc.
-│   ├── modules/           # 13 analysis modules + analysisEngine
+│   ├── modules/           # 14 analysis modules + analysisEngine
 │   ├── utils/             # exporters, db, crypto, githubIntegration
 │   ├── store.js           # Zustand state management
 │   └── App.jsx            # Main app with routing and navigation
-├── tests/                 # Vitest unit + regression + integration + structured tests (601 tests)
+├── tests/                 # Vitest unit + regression + integration + structured tests (679 tests)
 ├── docs/                  # User Guide, Architecture
 ├── vscode-extension/      # VS Code extension prototype
 ├── vite.config.js
@@ -129,7 +129,7 @@ MIT License — See LICENSE file for details.
 ## Links
 
 - **GitHub** — https://github.com/jj-shen99/valid_ai
-- **Book** — "Testing the Machine" by JJ Shen
+- **Book** — ["Testing the Machine"](https://www.amazon.com/dp/B0GTXN28BF) by JJ Shen
 
 ---
 
