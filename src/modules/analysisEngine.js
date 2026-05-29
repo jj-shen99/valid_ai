@@ -11,6 +11,7 @@ import { aiReviewAssistant } from './aiReviewAssistant'
 import { typescriptAnalyzer } from './typescriptAnalyzer'
 import { customRulesRunner } from './customRules'
 import { accessibilityAnalyzer } from './accessibilityAnalyzer'
+import { dependencyScanner } from './dependencyScanner'
 import { runWithTiming } from '../utils/perfTracker'
 
 const MODULE_REGISTRY = {
@@ -25,6 +26,7 @@ const MODULE_REGISTRY = {
   typescript: typescriptAnalyzer,
   customRules: customRulesRunner,
   accessibility: accessibilityAnalyzer,
+  dependency: dependencyScanner,
   aiReview: aiReviewAssistant,
 }
 
@@ -230,6 +232,12 @@ export const getModuleInfo = (moduleName) => {
       icon: '♿',
       description: 'Detects a11y issues: missing alt text, empty links, form labels, keyboard accessibility, ARIA misuse, and color-only indicators.',
       estimatedTime: '~2s',
+    },
+    dependency: {
+      name: 'Dependency Scanner',
+      icon: '📦',
+      description: 'Detects vulnerable, deprecated, or compromised package imports and dependency patterns in code.',
+      estimatedTime: '~1s',
     },
     customRules: {
       name: 'Custom Rules',

@@ -16,7 +16,10 @@ const MODULES = {
   mutation: { name: 'Mutation Scorer', icon: '🧬', desc: 'Identifies boundary operators, boolean negation targets, and arithmetic mutation points to assess how well test suites can catch semantic changes.' },
   property: { name: 'Property Generator', icon: '🎯', desc: 'Analyzes function signatures and structure to suggest property-based tests, invariants, and testability improvements.' },
   differential: { name: 'Differential Runner', icon: '⚖️', desc: 'Detects versioned functions and algorithm alternatives to enable comparison testing between different implementations.' },
-
+  typescript: { name: 'TypeScript Analyzer', icon: '🔷', desc: 'Detects TS-specific anti-patterns: any abuse, missing return types, unsafe assertions, @ts-ignore suppression, and non-null assertion overuse.' },
+  accessibility: { name: 'Accessibility Analyzer', icon: '♿', desc: 'Detects a11y issues: missing alt text, empty links, form labels, keyboard accessibility, ARIA misuse, and color-only indicators.' },
+  dependency: { name: 'Dependency Scanner', icon: '📦', desc: 'Detects vulnerable, deprecated, or compromised package imports and dependency patterns.' },
+  customRules: { name: 'Custom Rules', icon: '📝', desc: 'User-defined regex-based rules configured in Settings. Create custom patterns to enforce team coding standards.' },
   aiReview: { name: 'AI Review Assistant', icon: '🤖', desc: 'Uses Claude API for deep anti-pattern detection, architectural review, and context-aware suggestions beyond regex-based analysis.' },
 }
 

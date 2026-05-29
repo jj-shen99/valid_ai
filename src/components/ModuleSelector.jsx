@@ -12,6 +12,7 @@ const MODULES = [
   { id: 'differential', name: 'Differential Runner', icon: '⚖️', desc: 'Versioned functions, algorithm comparison' },
   { id: 'typescript', name: 'TypeScript Analyzer', icon: '🔷', desc: 'any abuse, missing return types, unsafe assertions' },
   { id: 'accessibility', name: 'Accessibility Analyzer', icon: '♿', desc: 'Missing alt text, empty links, ARIA, keyboard a11y' },
+  { id: 'dependency', name: 'Dependency Scanner', icon: '📦', desc: 'Vulnerable, deprecated, or compromised packages' },
   { id: 'customRules', name: 'Custom Rules', icon: '📝', desc: 'User-defined regex rules (configure in Settings)' },
 
   { id: 'aiReview', name: 'AI Review Assistant', icon: '🤖', desc: 'Claude-powered anti-pattern detection' },

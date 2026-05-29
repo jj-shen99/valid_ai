@@ -7,7 +7,7 @@ import FindingCard from '../components/FindingCard'
 import ExportPanel from '../components/ExportPanel'
 import { runAnalysis, runAnalysisTimed } from '../modules/analysisEngine'
 import { attachAutoFixes } from '../utils/autoFixer'
-import { Play, Upload, Loader, ChevronDown, ChevronUp, Layers, List, FolderUp } from 'lucide-react'
+import { Play, Upload, Loader, ChevronDown, ChevronUp, Layers, List, FolderUp, Search, FileDown } from 'lucide-react'
 import { analyzeBatch, readFilesFromInput } from '../utils/batchAnalyzer'
 import { groupFindings, deduplicateFindings } from '../utils/findingGrouper'
 import { getProfiles, addProfile, removeProfile } from '../utils/profileManager'
@@ -17,6 +17,9 @@ import { getAnnotations, setAnnotation } from '../utils/annotations'
 import { applyOverrides, setOverride } from '../utils/severityOverrides'
 import { complexitySummary } from '../utils/complexityMetrics'
 import { buildIssueUrl } from '../utils/githubIssueExporter'
+import { applyFilters } from '../utils/findingSearch'
+import { generateSummaryReport, downloadReport } from '../utils/summaryReport'
+import { recordAllModuleTrends } from '../utils/moduleTrend'
 
 const LANGUAGE_OPTIONS = [
   { value: 'python', label: 'Python' },
@@ -44,7 +47,7 @@ const TEST_PROFILES = [
     id: 'full',
     name: 'Full Audit',
     description: 'All modules',
-    modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'aiReview'],
+    modules: ['failureMode', 'security', 'hallucination', 'oracle', 'complexity', 'mutation', 'property', 'differential', 'typescript', 'accessibility', 'dependency', 'customRules', 'aiReview'],
   },
 ]
 
@@ -79,6 +82,8 @@ export default function CodeSubmission() {
   const [realtime, setRealtime] = useState(false)
   const [annotations, setAnnotations] = useState(getAnnotations)
   const [complexityData, setComplexityData] = useState(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [severityFilter, setSeverityFilter] = useState([])
   const addNotification = useStore((s) => s.addNotification)
 
   const handleAnnotate = (findingId, text) => {
@@ -122,6 +127,7 @@ export default function CodeSubmission() {
         : timedResult.findings
       const findings = applyOverrides(attachAutoFixes(rawFindings, code))
       setComplexityData(complexitySummary(code))
+      recordAllModuleTrends(findings)
       
       findings.forEach(finding => {
         useStore.getState().addFinding(finding)
@@ -188,7 +194,14 @@ export default function CodeSubmission() {
   const realtimeResult = useRealtimeAnalysis(code, language, selectedModules, { enabled: realtime })
 
   const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }
-  const sortedFindings = [...analysisFindings].sort((a, b) => (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4))
+  const filteredFindings = applyFilters(analysisFindings, { query: searchQuery, severities: severityFilter.length > 0 ? severityFilter : undefined })
+  const sortedFindings = [...filteredFindings].sort((a, b) => (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4))
+
+  const handleDownloadReport = () => {
+    const report = generateSummaryReport(analysisFindings, { language, modules: selectedModules, score: analysisScore, timestamp: new Date().toISOString() })
+    downloadReport(report)
+    addNotification('Report downloaded', 'success')
+  }
 
   return (
     <div className="space-y-6">
@@ -392,10 +405,42 @@ export default function CodeSubmission() {
             <>
               <QuickStats findings={analysisFindings} />
 
+              {/* Search & Filter Bar */}
+              <div className="flex flex-wrap items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg p-2">
+                <div className="flex items-center gap-1 flex-1 min-w-[200px] bg-white border border-gray-300 rounded-lg px-3 py-1.5">
+                  <Search size={14} className="text-gray-400" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search findings..."
+                    className="flex-1 text-sm outline-none bg-transparent"
+                  />
+                </div>
+                {['Critical', 'High', 'Medium', 'Info'].map(sev => (
+                  <button
+                    key={sev}
+                    onClick={() => setSeverityFilter(prev => prev.includes(sev) ? prev.filter(s => s !== sev) : [...prev, sev])}
+                    className={`text-xs px-2 py-1 rounded-full border transition-colors ${
+                      severityFilter.includes(sev)
+                        ? sev === 'Critical' ? 'bg-red-100 border-red-300 text-red-700'
+                          : sev === 'High' ? 'bg-orange-100 border-orange-300 text-orange-700'
+                          : sev === 'Medium' ? 'bg-yellow-100 border-yellow-300 text-yellow-700'
+                          : 'bg-blue-100 border-blue-300 text-blue-700'
+                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-100'
+                    }`}
+                  >{sev}</button>
+                ))}
+                <button onClick={handleDownloadReport} className="text-xs text-gray-500 hover:text-blue-600 flex items-center gap-1 ml-auto" title="Download markdown report">
+                  <FileDown size={14} /> Report
+                </button>
+              </div>
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-sm font-medium text-gray-700">
                     {sortedFindings.length} findings
+                    {sortedFindings.length !== analysisFindings.length && <span className="text-xs text-gray-400 ml-1">(of {analysisFindings.length})</span>}
                     {suppressionCount > 0 && <span className="text-xs text-gray-400 ml-2">({suppressionCount} suppressed)</span>}
                   </p>
                   <div className="flex items-center gap-2">

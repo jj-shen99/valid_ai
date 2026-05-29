@@ -87,11 +87,11 @@ valid_ai/
 │   │                      # TrendHistory, GitHubAnalysis, Settings
 │   ├── components/        # CodeEditor, ModuleSelector, FindingCard,
 │   │                      # ExportPanel, QuickStats, TrendChart, etc.
-│   ├── modules/           # 9 analysis modules + analysisEngine
+│   ├── modules/           # 13 analysis modules + analysisEngine
 │   ├── utils/             # exporters, db, crypto, githubIntegration
 │   ├── store.js           # Zustand state management
 │   └── App.jsx            # Main app with routing and navigation
-├── tests/                 # Vitest unit + regression + integration + structured tests (518 tests)
+├── tests/                 # Vitest unit + regression + integration + structured tests (601 tests)
 ├── docs/                  # User Guide, Architecture
 ├── vscode-extension/      # VS Code extension prototype
 ├── vite.config.js

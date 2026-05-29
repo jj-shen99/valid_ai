@@ -50,6 +50,10 @@ export default function Dashboard({ dark }) {
     { name: 'Differential Runner', status: true },
     { name: 'Oracle Checker', status: true },
     { name: 'Mutation Scorer', status: true },
+    { name: 'TypeScript Analyzer', status: true },
+    { name: 'Accessibility Analyzer', status: true },
+    { name: 'Dependency Scanner', status: true },
+    { name: 'Custom Rules', status: true },
     { name: 'AI Review Assistant', status: false },
   ]
 

@@ -4,6 +4,37 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [1.0.0] — Phase 10 (Stable Release)
+
+### Fixes
+- **Full Audit profile** — Now includes all 13 modules (was missing typescript, accessibility, dependency, customRules in some views).
+- **Module counts** — Dashboard, AnalysisView, ModuleSelector, GitHubAnalysis all show correct 13-module list.
+
+### New Features
+- **Finding search & filter bar** — Full-text search across category, description, suggestion, module, and code snippets. Severity toggle buttons for instant filtering. Shows filtered count vs total.
+- **Dark mode utilities** — `getDarkModePref`/`setDarkModePref` with system preference fallback. Dark-aware severity color palette (`severityColorsDark`). `dc()` helper for dual-class generation.
+- **Dependency Vulnerability Scanner** — New analysis module detecting 10 known vulnerable/deprecated packages (event-stream, ua-parser-js, colors, faker, node-ipc, lodash, moment, request, left-pad, serialize-javascript) plus deprecated API patterns (Buffer(), sync fs). Registered as 13th module.
+- **Analysis summary report** — Auto-generates markdown report with severity table, module breakdown, top 5 issues, and recommendations based on score. One-click download via Report button.
+- **Module quality trend sparklines** — Tracks per-module finding counts across runs (capped at 30). SVG sparkline path generator. `recordAllModuleTrends` auto-records after each analysis.
+
+### New Files
+- `src/utils/findingSearch.js` — Search, filter by severity/module/line range, apply combined filters.
+- `src/utils/darkMode.js` — Dark mode preference, class helpers, severity color palette.
+- `src/modules/dependencyScanner.js` — Dependency vulnerability detection module.
+- `src/utils/summaryReport.js` — Markdown report generator with download.
+- `src/utils/moduleTrend.js` — Module trend tracker with sparkline path generation.
+
+### Tests — 601 total (up from 518)
+- **Finding Search** (20 tests) — Text search, severity/module/line filters, combined filters, helpers.
+- **Dark Mode** (10 tests) — Preference storage, system fallback, dc helper, severity colors.
+- **Dependency Scanner** (11 tests) — Package detection, dedup, metadata, scoped imports, clean code.
+- **Summary Report** (11 tests) — Markdown generation, severity table, top issues, recommendations, edge cases.
+- **Module Trends** (15 tests) — CRUD, recording, sparklines, capping, persistence, SVG path.
+- **Integration** (7 tests) — Cross-feature pipelines, engine registration, Full Audit completeness.
+- **Structured** (9 tests) — API contract validation for all new modules.
+
+---
+
 ## [0.9.0] — Phase 9
 
 ### New Features
