@@ -4,6 +4,33 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [0.9.0] — Phase 9
+
+### New Features
+- **Finding annotations** — Attach user notes to individual findings. Notes persisted in localStorage with add/edit/remove. Note button in FindingCard expanded view.
+- **Severity override** — Reclassify finding severity per module+category. Override dropdown in FindingCard, shows original severity. Applies across all findings matching the key.
+- **Accessibility Analyzer module** — New analysis module detecting 10 a11y patterns: missing alt text, empty links, missing form labels, onClick without keyboard, non-semantic buttons, missing lang, autofocus, positive tabIndex, missing ARIA roles, color-only indicators.
+- **Code complexity score breakdown** — Cyclomatic complexity, cognitive complexity, logical LOC, and per-function breakdown. Letter grade (A–F). Displayed after analysis in a summary panel.
+- **Export to GitHub Issues** — Format findings as GitHub issues with title, body (description/suggestion/code/auto-fix), and labels. `buildIssueUrl` for manual creation, `createGitHubIssue` for API-based creation.
+
+### New Files
+- `src/utils/annotations.js` — Finding annotation CRUD with localStorage.
+- `src/utils/severityOverrides.js` — Severity override CRUD with applyOverrides.
+- `src/modules/accessibilityAnalyzer.js` — A11y analysis module (10 patterns).
+- `src/utils/complexityMetrics.js` — Cyclomatic, cognitive, LOC, function metrics.
+- `src/utils/githubIssueExporter.js` — GitHub issue formatting and creation.
+
+### Tests — 518 total (up from 428)
+- **Annotations** (11 tests) — CRUD, empty/whitespace handling, persistence, corruption.
+- **Severity Overrides** (14 tests) — CRUD, validation, applyOverrides, persistence.
+- **Accessibility Analyzer** (12 tests) — Pattern detection, metadata, dedup, clean code.
+- **Complexity Metrics** (23 tests) — Cyclomatic, cognitive, LOC, functionMetrics, summary, grading.
+- **GitHub Issue Exporter** (13 tests) — Title, body, labels, URL building.
+- **Integration** (6 tests) — Cross-feature interactions.
+- **Structured** (11 tests) — API contract validation.
+
+---
+
 ## [0.8.0] — Phase 8
 
 ### New Features

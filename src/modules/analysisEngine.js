@@ -10,6 +10,7 @@ import { mutationScorer } from './mutationScorer'
 import { aiReviewAssistant } from './aiReviewAssistant'
 import { typescriptAnalyzer } from './typescriptAnalyzer'
 import { customRulesRunner } from './customRules'
+import { accessibilityAnalyzer } from './accessibilityAnalyzer'
 import { runWithTiming } from '../utils/perfTracker'
 
 const MODULE_REGISTRY = {
@@ -23,6 +24,7 @@ const MODULE_REGISTRY = {
   mutation: mutationScorer,
   typescript: typescriptAnalyzer,
   customRules: customRulesRunner,
+  accessibility: accessibilityAnalyzer,
   aiReview: aiReviewAssistant,
 }
 
@@ -222,6 +224,12 @@ export const getModuleInfo = (moduleName) => {
       icon: '🔷',
       description: 'Detects TS-specific anti-patterns: any abuse, missing return types, unsafe assertions, @ts-ignore suppression, and non-null assertion overuse.',
       estimatedTime: '~3s',
+    },
+    accessibility: {
+      name: 'Accessibility Analyzer',
+      icon: '♿',
+      description: 'Detects a11y issues: missing alt text, empty links, form labels, keyboard accessibility, ARIA misuse, and color-only indicators.',
+      estimatedTime: '~2s',
     },
     customRules: {
       name: 'Custom Rules',

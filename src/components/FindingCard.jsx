@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { ChevronDown, ChevronUp, Copy, Wrench, Code2, EyeOff } from 'lucide-react'
+import { ChevronDown, ChevronUp, Copy, Wrench, Code2, EyeOff, MessageSquare, ArrowUpDown } from 'lucide-react'
 
 const severityColors = {
   Critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', badge: 'bg-red-100 text-red-800' },
@@ -8,8 +8,10 @@ const severityColors = {
   Info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', badge: 'bg-blue-100 text-blue-800' },
 }
 
-export default function FindingCard({ finding, sourceCode, onSuppress }) {
+export default function FindingCard({ finding, sourceCode, onSuppress, onAnnotate, onOverrideSeverity, annotation }) {
   const [expanded, setExpanded] = useState(false)
+  const [noteOpen, setNoteOpen] = useState(false)
+  const [noteText, setNoteText] = useState(annotation?.text || '')
   const colors = severityColors[finding.severity]
 
   const codeContext = useMemo(() => {
@@ -101,19 +103,64 @@ export default function FindingCard({ finding, sourceCode, onSuppress }) {
             </div>
           )}
 
-          <div className="flex items-center justify-between pt-2">
+          {noteOpen && onAnnotate && (
+            <div className="space-y-1">
+              <p className="text-xs font-semibold text-gray-600 flex items-center gap-1"><MessageSquare size={12} /> Note</p>
+              <textarea
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+                className="w-full text-xs border border-gray-300 rounded-lg p-2 font-sans"
+                rows={2}
+                placeholder="Add a note..."
+              />
+              <button
+                onClick={(e) => { e.stopPropagation(); onAnnotate(finding.id, noteText); setNoteOpen(false) }}
+                className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              >Save Note</button>
+            </div>
+          )}
+
+          <div className="flex items-center justify-between pt-2 flex-wrap gap-2">
             <span className="text-xs text-gray-500">
               {new Date(finding.timestamp).toLocaleTimeString()}
+              {finding.originalSeverity && (
+                <span className="ml-2 text-gray-400">(was {finding.originalSeverity})</span>
+              )}
             </span>
-            {onSuppress && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onSuppress(finding) }}
-                className="text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 transition-colors"
-                title="Suppress this finding category"
-              >
-                <EyeOff size={12} /> Suppress
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {onAnnotate && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); setNoteOpen(o => !o) }}
+                  className="text-xs text-gray-400 hover:text-blue-600 flex items-center gap-1 transition-colors"
+                  title="Add note"
+                >
+                  <MessageSquare size={12} /> {annotation ? 'Edit Note' : 'Note'}
+                </button>
+              )}
+              {onOverrideSeverity && (
+                <select
+                  value={finding.severity}
+                  onClick={e => e.stopPropagation()}
+                  onChange={e => { e.stopPropagation(); onOverrideSeverity(finding, e.target.value) }}
+                  className="text-xs border border-gray-300 rounded px-1 py-0.5 text-gray-600"
+                  title="Override severity"
+                >
+                  <option value="Critical">Critical</option>
+                  <option value="High">High</option>
+                  <option value="Medium">Medium</option>
+                  <option value="Info">Info</option>
+                </select>
+              )}
+              {onSuppress && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onSuppress(finding) }}
+                  className="text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 transition-colors"
+                  title="Suppress this finding category"
+                >
+                  <EyeOff size={12} /> Suppress
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

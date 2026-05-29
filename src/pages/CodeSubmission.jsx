@@ -13,6 +13,10 @@ import { groupFindings, deduplicateFindings } from '../utils/findingGrouper'
 import { getProfiles, addProfile, removeProfile } from '../utils/profileManager'
 import { applySuppressions, addSuppression, getSuppressions } from '../utils/suppressions'
 import { useRealtimeAnalysis } from '../hooks/useRealtimeAnalysis'
+import { getAnnotations, setAnnotation } from '../utils/annotations'
+import { applyOverrides, setOverride } from '../utils/severityOverrides'
+import { complexitySummary } from '../utils/complexityMetrics'
+import { buildIssueUrl } from '../utils/githubIssueExporter'
 
 const LANGUAGE_OPTIONS = [
   { value: 'python', label: 'Python' },
@@ -73,7 +77,21 @@ export default function CodeSubmission() {
   const [batchResults, setBatchResults] = useState(null)
   const [batchProgress, setBatchProgress] = useState(null)
   const [realtime, setRealtime] = useState(false)
+  const [annotations, setAnnotations] = useState(getAnnotations)
+  const [complexityData, setComplexityData] = useState(null)
   const addNotification = useStore((s) => s.addNotification)
+
+  const handleAnnotate = (findingId, text) => {
+    setAnnotation(findingId, text)
+    setAnnotations(getAnnotations())
+    addNotification('Note saved', 'success')
+  }
+
+  const handleOverrideSeverity = (finding, newSeverity) => {
+    setOverride(finding.module, finding.category, newSeverity)
+    setAnalysisFindings(prev => applyOverrides(prev))
+    addNotification(`Severity changed to ${newSeverity}`, 'info')
+  }
 
   const handleSuppress = (finding) => {
     addSuppression(finding.module, finding.category)
@@ -102,7 +120,8 @@ export default function CodeSubmission() {
       const rawFindings = incremental
         ? await runAnalysis(code, language, selectedModules, prompt, apiKey, { incremental })
         : timedResult.findings
-      const findings = attachAutoFixes(rawFindings, code)
+      const findings = applyOverrides(attachAutoFixes(rawFindings, code))
+      setComplexityData(complexitySummary(code))
       
       findings.forEach(finding => {
         useStore.getState().addFinding(finding)
@@ -394,7 +413,7 @@ export default function CodeSubmission() {
 
                 {viewMode === 'list' ? (
                   sortedFindings.map((finding, idx) => (
-                    <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} onSuppress={handleSuppress} />
+                    <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} onSuppress={handleSuppress} onAnnotate={handleAnnotate} onOverrideSeverity={handleOverrideSeverity} annotation={annotations[finding.id]} />
                   ))
                 ) : (
                   groupFindings(deduplicateFindings(sortedFindings), groupBy).map(group => (
@@ -405,13 +424,50 @@ export default function CodeSubmission() {
                       </summary>
                       <div className="p-3 space-y-2">
                         {group.findings.map((finding, idx) => (
-                          <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} onSuppress={handleSuppress} />
+                          <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} onSuppress={handleSuppress} onAnnotate={handleAnnotate} onOverrideSeverity={handleOverrideSeverity} annotation={annotations[finding.id]} />
                         ))}
                       </div>
                     </details>
                   ))
                 )}
               </div>
+
+              {complexityData && (
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Complexity Breakdown</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xl font-bold text-gray-900">{complexityData.grade}</p>
+                      <p className="text-[10px] text-gray-500">Grade</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xl font-bold text-gray-900">{complexityData.cyclomaticComplexity}</p>
+                      <p className="text-[10px] text-gray-500">Cyclomatic</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xl font-bold text-gray-900">{complexityData.cognitiveComplexity}</p>
+                      <p className="text-[10px] text-gray-500">Cognitive</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xl font-bold text-gray-900">{complexityData.logicalLOC}</p>
+                      <p className="text-[10px] text-gray-500">Logical LOC</p>
+                    </div>
+                  </div>
+                  {complexityData.functions.length > 0 && (
+                    <details className="mt-3">
+                      <summary className="text-xs text-gray-500 cursor-pointer">Function breakdown ({complexityData.functions.length})</summary>
+                      <div className="mt-2 space-y-1">
+                        {complexityData.functions.map((fn, i) => (
+                          <div key={i} className="flex items-center justify-between text-xs text-gray-600">
+                            <span className="font-mono truncate">{fn.name}()</span>
+                            <span className="text-gray-400">CC:{fn.cyclomaticComplexity} Cog:{fn.cognitiveComplexity} LOC:{fn.loc}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </div>
+              )}
 
               {perfTimings && (
                 <div className="bg-white border border-gray-200 rounded-xl p-4">

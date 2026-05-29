@@ -237,10 +237,10 @@ export default function Settings() {
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <h3 className="font-semibold mb-3">About ValidAI</h3>
         <div className="space-y-1.5 text-sm text-gray-600">
-          <p><strong>Version:</strong> 0.8.0</p>
+          <p><strong>Version:</strong> 0.9.0</p>
           <p><strong>Stack:</strong> React + Vite + Tailwind CSS + IndexedDB</p>
           <p><strong>License:</strong> MIT</p>
-          <p><strong>Modules:</strong> 11 built-in + custom rules</p>
+          <p><strong>Modules:</strong> 12 built-in + custom rules</p>
         </div>
       </div>
 
