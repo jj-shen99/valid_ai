@@ -4,7 +4,8 @@ import FindingCard from '../components/FindingCard'
 import QuickStats from '../components/QuickStats'
 import ExportPanel from '../components/ExportPanel'
 import { getAllSubmissions, getFindingsBySubmission } from '../utils/db'
-import { Loader, AlertCircle, ChevronDown, Clock, Github, FileText, Database } from 'lucide-react'
+import { Loader, AlertCircle, ChevronDown, Clock, Github, FileText, Database, GitCompare, ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react'
+import { diffSubmissions, formatDelta, scoreTrend } from '../utils/submissionDiff'
 
 const MODULES = {
   failureMode: { name: 'Failure Mode Scanner', icon: '🔍', desc: 'Detects off-by-one errors, missing null/undefined checks, silent exception swallowing, unbounded loops, and type coercion issues common in AI-generated code.' },
@@ -33,6 +34,9 @@ export default function AnalysisView({ onNavigate }) {
   const [loadedSubmission, setLoadedSubmission] = useState(null)
   const [loadingHistory, setLoadingHistory] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [compareMode, setCompareMode] = useState(false)
+  const [compareA, setCompareA] = useState(null)
+  const [compareB, setCompareB] = useState(null)
 
   // Load recent submissions from DB
   useEffect(() => {
@@ -284,6 +288,99 @@ export default function AnalysisView({ onNavigate }) {
             />
           )}
         </>
+      )}
+
+      {/* ─── Comparison Panel ─── */}
+      {recentSubmissions.length >= 2 && (
+        <div className="border-t border-gray-200 pt-6 space-y-4">
+          <button onClick={() => setCompareMode(c => !c)} className="flex items-center gap-2 text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors">
+            <GitCompare size={16} />
+            {compareMode ? 'Hide' : 'Compare'} Submissions
+          </button>
+
+          {compareMode && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Older</label>
+                  <select
+                    value={compareA?.id || ''}
+                    onChange={e => setCompareA(recentSubmissions.find(s => String(s.id) === e.target.value) || null)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+                  >
+                    <option value="">Select submission...</option>
+                    {recentSubmissions.map(s => (
+                      <option key={s.id} value={s.id}>{formatLabel(s).source} — {formatLabel(s).date}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Newer</label>
+                  <select
+                    value={compareB?.id || ''}
+                    onChange={e => setCompareB(recentSubmissions.find(s => String(s.id) === e.target.value) || null)}
+                    className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2"
+                  >
+                    <option value="">Select submission...</option>
+                    {recentSubmissions.map(s => (
+                      <option key={s.id} value={s.id}>{formatLabel(s).source} — {formatLabel(s).date}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {compareA && compareB && (() => {
+                const diff = diffSubmissions(compareA, compareB)
+                if (!diff) return null
+                const trend = scoreTrend(diff.scoreDelta)
+                return (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className={`rounded-lg p-4 text-center border ${
+                        trend === 'improved' ? 'bg-emerald-50 border-emerald-200' :
+                        trend === 'regressed' ? 'bg-red-50 border-red-200' :
+                        'bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          {trend === 'improved' ? <ArrowUpRight size={16} className="text-emerald-600" /> :
+                           trend === 'regressed' ? <ArrowDownRight size={16} className="text-red-600" /> :
+                           <Minus size={16} className="text-gray-500" />}
+                        </div>
+                        <p className="text-2xl font-bold">{formatDelta(diff.scoreDelta)}%</p>
+                        <p className="text-xs text-gray-500">Score {trend}</p>
+                      </div>
+                      <div className="rounded-lg p-4 text-center border bg-emerald-50 border-emerald-200">
+                        <p className="text-2xl font-bold text-emerald-700">{diff.resolvedFindings.length}</p>
+                        <p className="text-xs text-gray-500">Resolved</p>
+                      </div>
+                      <div className="rounded-lg p-4 text-center border bg-red-50 border-red-200">
+                        <p className="text-2xl font-bold text-red-700">{diff.newFindings.length}</p>
+                        <p className="text-xs text-gray-500">New Issues</p>
+                      </div>
+                    </div>
+
+                    {diff.resolvedFindings.length > 0 && (
+                      <details className="border border-emerald-200 rounded-lg">
+                        <summary className="px-4 py-2 cursor-pointer text-sm font-medium text-emerald-700 bg-emerald-50 rounded-t-lg">Resolved ({diff.resolvedFindings.length})</summary>
+                        <div className="p-3 space-y-2">
+                          {diff.resolvedFindings.map((f, i) => <FindingCard key={f.id || i} finding={f} />)}
+                        </div>
+                      </details>
+                    )}
+                    {diff.newFindings.length > 0 && (
+                      <details className="border border-red-200 rounded-lg">
+                        <summary className="px-4 py-2 cursor-pointer text-sm font-medium text-red-700 bg-red-50 rounded-t-lg">New Issues ({diff.newFindings.length})</summary>
+                        <div className="p-3 space-y-2">
+                          {diff.newFindings.map((f, i) => <FindingCard key={f.id || i} finding={f} />)}
+                        </div>
+                      </details>
+                    )}
+                  </div>
+                )
+              })()}
+            </div>
+          )}
+        </div>
       )}
     </div>
   )

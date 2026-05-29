@@ -1,15 +1,18 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useStore } from '../store'
 import CodeEditor from '../components/CodeEditor'
 import ModuleSelector from '../components/ModuleSelector'
 import QuickStats from '../components/QuickStats'
 import FindingCard from '../components/FindingCard'
 import ExportPanel from '../components/ExportPanel'
-import { runAnalysis } from '../modules/analysisEngine'
+import { runAnalysis, runAnalysisTimed } from '../modules/analysisEngine'
 import { attachAutoFixes } from '../utils/autoFixer'
-import { Play, Upload, Loader, ChevronDown, ChevronUp, Layers, List } from 'lucide-react'
+import { Play, Upload, Loader, ChevronDown, ChevronUp, Layers, List, FolderUp } from 'lucide-react'
+import { analyzeBatch, readFilesFromInput } from '../utils/batchAnalyzer'
 import { groupFindings, deduplicateFindings } from '../utils/findingGrouper'
 import { getProfiles, addProfile, removeProfile } from '../utils/profileManager'
+import { applySuppressions, addSuppression, getSuppressions } from '../utils/suppressions'
+import { useRealtimeAnalysis } from '../hooks/useRealtimeAnalysis'
 
 const LANGUAGE_OPTIONS = [
   { value: 'python', label: 'Python' },
@@ -64,7 +67,21 @@ export default function CodeSubmission() {
   const [userProfiles, setUserProfiles] = useState(getProfiles)
   const [showSaveProfile, setShowSaveProfile] = useState(false)
   const [profileName, setProfileName] = useState('')
+  const [suppressionCount, setSuppressionCount] = useState(0)
+  const [perfTimings, setPerfTimings] = useState(null)
+  const [showPerf, setShowPerf] = useState(false)
+  const [batchResults, setBatchResults] = useState(null)
+  const [batchProgress, setBatchProgress] = useState(null)
+  const [realtime, setRealtime] = useState(false)
   const addNotification = useStore((s) => s.addNotification)
+
+  const handleSuppress = (finding) => {
+    addSuppression(finding.module, finding.category)
+    const updated = applySuppressions(analysisFindings)
+    setAnalysisFindings(updated)
+    setSuppressionCount(c => c + 1)
+    addNotification(`Suppressed: ${finding.category}`, 'info')
+  }
 
   const handleRunAnalysis = async () => {
     if (!code.trim()) {
@@ -80,7 +97,11 @@ export default function CodeSubmission() {
 
     try {
       const apiKey = useStore.getState().apiKey
-      const rawFindings = await runAnalysis(code, language, selectedModules, prompt, apiKey, { incremental })
+      const timedResult = await runAnalysisTimed(code, language, selectedModules, prompt, apiKey)
+      setPerfTimings(timedResult.timings)
+      const rawFindings = incremental
+        ? await runAnalysis(code, language, selectedModules, prompt, apiKey, { incremental })
+        : timedResult.findings
       const findings = attachAutoFixes(rawFindings, code)
       
       findings.forEach(finding => {
@@ -145,6 +166,8 @@ export default function CodeSubmission() {
     setSelectedModules(profile.modules)
   }
 
+  const realtimeResult = useRealtimeAnalysis(code, language, selectedModules, { enabled: realtime })
+
   const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }
   const sortedFindings = [...analysisFindings].sort((a, b) => (severityOrder[a.severity] ?? 4) - (severityOrder[b.severity] ?? 4))
 
@@ -159,7 +182,16 @@ export default function CodeSubmission() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-900 mb-2">Code</label>
+            <div className="flex items-center gap-2 mb-2">
+              <label className="block text-sm font-medium text-gray-900">Code</label>
+              {realtime && realtimeResult.isAnalyzing && <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium animate-pulse">analyzing...</span>}
+              {realtime && !realtimeResult.isAnalyzing && realtimeResult.findings.length > 0 && (
+                <span className="text-[10px] bg-red-100 text-red-700 px-1.5 py-0.5 rounded-full font-medium">{realtimeResult.findings.length} live issues</span>
+              )}
+              {realtime && !realtimeResult.isAnalyzing && realtimeResult.findings.length === 0 && code.trim() && (
+                <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">clean</span>
+              )}
+            </div>
             <CodeEditor value={code} onChange={setCode} language={language} />
           </div>
 
@@ -183,7 +215,36 @@ export default function CodeSubmission() {
                 type="file"
                 onChange={handleFileUpload}
                 className="hidden"
-                accept=".py,.js,.ts,.java,.go,.cs"
+                accept=".py,.js,.ts,.java,.go,.cs,.jsx,.tsx"
+              />
+            </label>
+            <label className="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer flex items-center gap-2">
+              <FolderUp size={16} />
+              Batch
+              <input
+                type="file"
+                multiple
+                onChange={async (e) => {
+                  const fileList = e.target.files
+                  if (!fileList?.length) return
+                  setIsRunning(true)
+                  setBatchResults(null)
+                  setShowResults(false)
+                  try {
+                    const files = await readFilesFromInput(fileList)
+                    const result = await analyzeBatch(files, selectedModules, (p) => setBatchProgress(p))
+                    setBatchResults(result)
+                    setBatchProgress(null)
+                    addNotification(`Batch: ${result.summary.fileCount} files, ${result.summary.totalFindings} findings`, 'success')
+                  } catch (err) {
+                    addNotification('Batch analysis failed: ' + err.message, 'error')
+                  } finally {
+                    setIsRunning(false)
+                    e.target.value = ''
+                  }
+                }}
+                className="hidden"
+                accept=".py,.js,.ts,.java,.go,.cs,.jsx,.tsx"
               />
             </label>
           </div>
@@ -258,6 +319,11 @@ export default function CodeSubmission() {
             <span className="font-medium">Incremental mode</span>
             <span className="text-xs text-gray-400">Only report findings on changed lines</span>
           </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <input type="checkbox" checked={realtime} onChange={e => setRealtime(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <span className="font-medium">Real-time mode</span>
+            <span className="text-xs text-gray-400">Auto-analyze as you type (1.5s delay)</span>
+          </label>
 
           <button
             onClick={handleRunAnalysis}
@@ -309,7 +375,10 @@ export default function CodeSubmission() {
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-gray-700">{sortedFindings.length} findings</p>
+                  <p className="text-sm font-medium text-gray-700">
+                    {sortedFindings.length} findings
+                    {suppressionCount > 0 && <span className="text-xs text-gray-400 ml-2">({suppressionCount} suppressed)</span>}
+                  </p>
                   <div className="flex items-center gap-2">
                     <button onClick={() => setViewMode('list')} className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600'}`} title="List view"><List size={16} /></button>
                     <button onClick={() => setViewMode('grouped')} className={`p-1.5 rounded ${viewMode === 'grouped' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600'}`} title="Grouped view"><Layers size={16} /></button>
@@ -325,7 +394,7 @@ export default function CodeSubmission() {
 
                 {viewMode === 'list' ? (
                   sortedFindings.map((finding, idx) => (
-                    <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} />
+                    <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} onSuppress={handleSuppress} />
                   ))
                 ) : (
                   groupFindings(deduplicateFindings(sortedFindings), groupBy).map(group => (
@@ -336,13 +405,43 @@ export default function CodeSubmission() {
                       </summary>
                       <div className="p-3 space-y-2">
                         {group.findings.map((finding, idx) => (
-                          <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} />
+                          <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} onSuppress={handleSuppress} />
                         ))}
                       </div>
                     </details>
                   ))
                 )}
               </div>
+
+              {perfTimings && (
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <button onClick={() => setShowPerf(s => !s)} className="flex items-center justify-between w-full text-sm font-semibold text-gray-700">
+                    <span>Performance Metrics</span>
+                    <span className="text-xs text-gray-400">{showPerf ? 'Hide' : 'Show'}</span>
+                  </button>
+                  {showPerf && (
+                    <div className="mt-3 space-y-2">
+                      {Object.entries(perfTimings).map(([mod, data]) => {
+                        const maxDuration = Math.max(...Object.values(perfTimings).map(d => d.duration || 0), 1)
+                        return (
+                          <div key={mod} className="flex items-center gap-3 text-xs">
+                            <span className="w-36 truncate font-medium text-gray-600">{mod}</span>
+                            <div className="flex-1 bg-gray-100 rounded-full h-2">
+                              <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${((data.duration || 0) / maxDuration) * 100}%` }} />
+                            </div>
+                            <span className="w-16 text-right text-gray-500">{data.duration?.toFixed(1) || 0}ms</span>
+                            <span className="w-10 text-right text-gray-400">{data.findingCount ?? 0}</span>
+                          </div>
+                        )
+                      })}
+                      <div className="pt-2 border-t border-gray-100 text-xs text-gray-500 flex justify-between">
+                        <span>Total: {Object.values(perfTimings).reduce((s, d) => s + (d.duration || 0), 0).toFixed(1)}ms</span>
+                        <span>{Object.keys(perfTimings).length} modules</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               <ExportPanel
                 findings={sortedFindings}
@@ -361,6 +460,55 @@ export default function CodeSubmission() {
               <p className="text-emerald-800 font-medium">No issues found — your code looks clean!</p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Batch progress */}
+      {batchProgress && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+          <Loader className="animate-spin text-blue-600 mx-auto mb-2" size={20} />
+          <p className="text-sm text-blue-800">Analyzing {batchProgress.filename} ({batchProgress.current}/{batchProgress.total})</p>
+        </div>
+      )}
+
+      {/* Batch results */}
+      {batchResults && (
+        <div className="space-y-4 border-t border-gray-200 pt-6">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Batch Results
+            <span className="ml-3 text-sm font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
+              {batchResults.summary.fileCount} files &middot; Avg: {batchResults.summary.avgScore}%
+            </span>
+          </h3>
+          <div className="space-y-2">
+            {batchResults.results.map((r, i) => (
+              <details key={i} className="border border-gray-200 rounded-lg">
+                <summary className="px-4 py-3 cursor-pointer flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-gray-800">{r.filename}</span>
+                    <span className="text-xs text-gray-500">{r.language}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      r.score >= 80 ? 'bg-emerald-100 text-emerald-700' :
+                      r.score >= 50 ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700'
+                    }`}>{r.score}%</span>
+                    <span className="text-xs text-gray-400">{r.stats.total} findings</span>
+                  </div>
+                </summary>
+                {r.findings.length > 0 && (
+                  <div className="p-3 space-y-2 border-t border-gray-100">
+                    {r.findings.slice(0, 10).map((f, idx) => (
+                      <FindingCard key={f.id || idx} finding={f} />
+                    ))}
+                    {r.findings.length > 10 && <p className="text-xs text-gray-400 text-center">+{r.findings.length - 10} more</p>}
+                  </div>
+                )}
+                {r.error && <p className="px-4 py-2 text-xs text-red-600 border-t border-gray-100">{r.error}</p>}
+              </details>
+            ))}
+          </div>
         </div>
       )}
     </div>

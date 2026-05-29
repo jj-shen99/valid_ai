@@ -10,6 +10,7 @@ import { mutationScorer } from './mutationScorer'
 import { aiReviewAssistant } from './aiReviewAssistant'
 import { typescriptAnalyzer } from './typescriptAnalyzer'
 import { customRulesRunner } from './customRules'
+import { runWithTiming } from '../utils/perfTracker'
 
 const MODULE_REGISTRY = {
   failureMode: failureModeScanner,
@@ -137,6 +138,32 @@ export const runAnalysis = async (code, language, selectedModules, prompt = '', 
     const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }
     return severityOrder[a.severity] - severityOrder[b.severity]
   })
+}
+
+// Timed variant: returns { findings, timings, totalDuration }
+export const runAnalysisTimed = async (code, language, selectedModules, prompt = '', apiKey = '') => {
+  const syncModules = selectedModules.filter(m => m !== 'aiReview')
+  const hasAI = selectedModules.includes('aiReview')
+
+  const { findings, timings, totalDuration } = await runWithTiming(
+    syncModules, MODULE_REGISTRY, code, language
+  )
+
+  if (hasAI) {
+    const start = performance.now()
+    try {
+      const aiFindings = await aiReviewAssistant(code, language, apiKey)
+      findings.push(...aiFindings)
+      timings.aiReview = { duration: Math.round((performance.now() - start) * 100) / 100, findingCount: aiFindings.length }
+    } catch (error) {
+      timings.aiReview = { duration: Math.round((performance.now() - start) * 100) / 100, error: error.message }
+    }
+  }
+
+  const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }
+  findings.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity])
+
+  return { findings, timings, totalDuration }
 }
 
 export const getModuleInfo = (moduleName) => {

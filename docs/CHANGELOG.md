@@ -4,6 +4,32 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [0.8.0] — Phase 8
+
+### New Features
+- **Finding suppression** — Suppress findings by module+category. Persisted in localStorage. Per-finding suppress button in FindingCard, suppressed count shown in results.
+- **Module performance metrics** — `runAnalysisTimed` variant tracks per-module execution time and finding count. Collapsible performance panel with bar chart visualization. History capped at 50 runs.
+- **Batch multi-file analysis** — Upload multiple files at once via "Batch" button. Per-file results with expandable cards showing score, language, and findings.
+- **Real-time analysis** — Debounced auto-analysis as you type (1.5s delay). Live badge showing issue count or clean status. Skips AI module for speed.
+- **Analysis history comparison** — Compare any two past submissions side-by-side. Shows score delta, resolved findings, and new issues with expandable details.
+
+### New Files
+- `src/utils/suppressions.js` — Suppression CRUD with localStorage persistence.
+- `src/utils/perfTracker.js` — Module timing, history, and averages.
+- `src/utils/batchAnalyzer.js` — Multi-file analysis with language detection.
+- `src/hooks/useRealtimeAnalysis.js` — Debounced auto-analysis hook.
+- `src/utils/submissionDiff.js` — Submission comparison utilities.
+
+### Tests — 428 total (up from 350)
+- **Suppressions** (17 tests) — CRUD, dedup, filtering, persistence, corrupted data.
+- **Perf Tracker** (14 tests) — Timing, history CRUD, averages, capping, error handling.
+- **Batch Analyzer** (11 tests) — Language detection for all extensions.
+- **Submission Diff** (17 tests) — Diffing, deltas, edge cases, format utilities.
+- **Integration** (7 tests) — Cross-feature interactions.
+- **Structured** (12 tests) — API contract validation.
+
+---
+
 ## [0.7.0] — Phase 7
 
 ### New Features

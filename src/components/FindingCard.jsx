@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react'
-import { ChevronDown, ChevronUp, Copy, Wrench, Code2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Copy, Wrench, Code2, EyeOff } from 'lucide-react'
 
 const severityColors = {
   Critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', badge: 'bg-red-100 text-red-800' },
@@ -8,7 +8,7 @@ const severityColors = {
   Info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', badge: 'bg-blue-100 text-blue-800' },
 }
 
-export default function FindingCard({ finding, sourceCode }) {
+export default function FindingCard({ finding, sourceCode, onSuppress }) {
   const [expanded, setExpanded] = useState(false)
   const colors = severityColors[finding.severity]
 
@@ -105,6 +105,15 @@ export default function FindingCard({ finding, sourceCode }) {
             <span className="text-xs text-gray-500">
               {new Date(finding.timestamp).toLocaleTimeString()}
             </span>
+            {onSuppress && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onSuppress(finding) }}
+                className="text-xs text-gray-400 hover:text-red-600 flex items-center gap-1 transition-colors"
+                title="Suppress this finding category"
+              >
+                <EyeOff size={12} /> Suppress
+              </button>
+            )}
           </div>
         </div>
       )}
