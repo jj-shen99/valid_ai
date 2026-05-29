@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { ChevronDown, ChevronUp, Copy } from 'lucide-react'
+import React, { useState, useMemo } from 'react'
+import { ChevronDown, ChevronUp, Copy, Wrench, Code2 } from 'lucide-react'
 
 const severityColors = {
   Critical: { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', badge: 'bg-red-100 text-red-800' },
@@ -8,9 +8,18 @@ const severityColors = {
   Info: { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-900', badge: 'bg-blue-100 text-blue-800' },
 }
 
-export default function FindingCard({ finding }) {
+export default function FindingCard({ finding, sourceCode }) {
   const [expanded, setExpanded] = useState(false)
   const colors = severityColors[finding.severity]
+
+  const codeContext = useMemo(() => {
+    if (!sourceCode || !finding.lineNumber) return null
+    const lines = sourceCode.split('\n')
+    const ln = finding.lineNumber - 1
+    const start = Math.max(0, ln - 3)
+    const end = Math.min(lines.length, ln + 4)
+    return { start, end, lines: lines.slice(start, end), highlight: ln - start }
+  }, [sourceCode, finding.lineNumber])
 
   const handleCopy = () => {
     navigator.clipboard.writeText(finding.suggestion)
@@ -57,6 +66,40 @@ export default function FindingCard({ finding }) {
               </button>
             </div>
           </div>
+
+          {codeContext && (
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-1 flex items-center gap-1"><Code2 size={12} /> Source Context</p>
+              <div className="bg-gray-900 rounded-lg p-3 text-xs font-mono overflow-x-auto leading-5">
+                {codeContext.lines.map((line, i) => {
+                  const lineNum = codeContext.start + i + 1
+                  const isHighlight = i === codeContext.highlight
+                  return (
+                    <div key={i} className={`flex ${isHighlight ? 'bg-red-900/40 -mx-3 px-3 border-l-2 border-red-400' : ''}`}>
+                      <span className={`w-8 flex-shrink-0 text-right mr-3 select-none ${isHighlight ? 'text-red-400' : 'text-gray-600'}`}>{lineNum}</span>
+                      <span className={isHighlight ? 'text-red-200' : 'text-gray-300'}>{line || ' '}</span>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
+          {finding.autoFix && (
+            <div>
+              <p className="text-xs font-semibold text-gray-600 mb-1 flex items-center gap-1"><Wrench size={12} /> Auto-Fix Patch</p>
+              <div className="bg-gray-900 rounded-lg p-3 text-xs font-mono overflow-x-auto">
+                <div className="text-red-400">- {finding.autoFix.replace}</div>
+                <div className="text-green-400">+ {finding.autoFix.with}</div>
+              </div>
+              <button
+                onClick={() => navigator.clipboard.writeText(finding.autoFix.with)}
+                className="mt-1.5 text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
+              >
+                <Copy size={12} /> Copy fix
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center justify-between pt-2">
             <span className="text-xs text-gray-500">

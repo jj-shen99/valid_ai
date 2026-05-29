@@ -4,6 +4,54 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [0.7.0] — Phase 7
+
+### New Features
+- **Keyboard shortcuts** — Global shortcut system with `⌘/Ctrl+K` command palette, `⌘/Ctrl+1–5` page navigation, and `Shift+?` help modal. All shortcuts discoverable via the ShortcutsModal.
+- **Command Palette** — VS Code–style fuzzy command palette for quick navigation and actions. Searchable, grouped by Navigation/Actions/Help.
+- **Code context viewer** — FindingCard now shows ±3 lines of surrounding source code with line numbers and highlighted offending line when expanded.
+- **Finding grouping & deduplication** — Toggle between list/grouped view in analysis results. Group by module, severity, or category. Deduplicates near-identical findings across modules.
+- **Saveable analysis profiles** — Save current module selection as a named preset. User profiles stored in localStorage alongside built-in Quick Scan/Security/Full Audit presets. Delete profiles individually.
+
+### New Files
+- `src/hooks/useKeyboardShortcuts.js` — Global keyboard shortcut hook with SHORTCUT_MAP registry.
+- `src/components/CommandPalette.jsx` — Fuzzy-search command palette overlay.
+- `src/components/ShortcutsModal.jsx` — Keyboard shortcuts reference modal.
+- `src/utils/findingGrouper.js` — Group, deduplicate, priority-score, and summarize findings.
+- `src/utils/profileManager.js` — CRUD for user-defined analysis profile presets.
+
+### Tests — 350 total (up from 304)
+- **Keyboard Shortcuts** (7 tests) — SHORTCUT_MAP structure, unique combos, all shortcuts present.
+- **Finding Grouper** (17 tests) — groupBy module/severity/category, dedup, priorityScore, sortByPriority, groupSummary.
+- **Profile Manager** (12 tests) — CRUD, unique IDs, persistence, corrupted JSON handling.
+- **Code Context** (10 tests) — Context window, edge cases, highlight index, out-of-range lines.
+
+---
+
+## [0.6.0] — Phase 6
+
+### New Features
+- **CLI mode** — `node cli/index.js <file>` analyzes files from the command line with `--modules`, `--format` (text/json/sarif), and `--min-severity` options. Supports `bin` entry for `npx valid-ai`. Exit code 1 on critical findings for CI/CD integration.
+- **TypeScript Analyzer module** — Detects TS-specific anti-patterns: explicit `any` type abuse, unsafe `as any` assertions, double assertions, non-null assertion (`!.`) overuse, `@ts-ignore`/`@ts-nocheck` suppression, untyped function parameters, and missing return types on exports.
+- **Auto-fix suggestions** — Concrete code patches attached to findings for common patterns: loose equality → strict, silent catch → console.error, off-by-one `<=` → `<`, `innerHTML` → `textContent`, `eval` → `JSON.parse`, and TS `any` → `unknown`. FindingCard UI shows diff-style patch with copy button.
+- **Custom rule authoring** — Define regex-based rules in Settings with name, pattern, severity, message, and suggestion. Rules stored in `localStorage`, toggled on/off individually, and run alongside built-in modules via the "Custom Rules" module selector option.
+
+### New Files
+- `cli/index.js` — CLI entry point with colorized text, JSON, and SARIF output formats.
+- `src/modules/typescriptAnalyzer.js` — TypeScript-specific analysis module (8 patterns).
+- `src/modules/customRules.js` — Custom rule CRUD and runner engine.
+- `src/utils/autoFixer.js` — Auto-fix pattern matching and patch generation.
+
+### Tests — 304 total (up from 227)
+- **Hash Router** (7 tests) — Page parsing, invalid hashes, XSS prevention.
+- **Diff Analyzer** (20 tests) — Changed lines, context, filtering, code cache, hashing.
+- **TypeScript Analyzer** (13 tests) — All 8 patterns, dedup, autoFix generation, language gating.
+- **Auto-Fixer** (12 tests) — Attach fixes, apply patches, generate patch text, edge cases.
+- **Custom Rules** (15 tests) — CRUD, toggle, runner, dedup, invalid regex, comment skipping.
+- **CLI & Engine** (10 tests) — Module registry, incremental mode, TS module integration, sorting.
+
+---
+
 ## [0.5.0] — Phase 5
 
 ### Architecture Enhancements

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useStore } from '../store'
-import { Eye, EyeOff, Save, Trash2, Database, Github, Lock, Shield } from 'lucide-react'
+import { Eye, EyeOff, Save, Trash2, Database, Github, Lock, Shield, Plus, X, ToggleLeft, ToggleRight, FileCode } from 'lucide-react'
+import { getCustomRules, addCustomRule, removeCustomRule, toggleCustomRule } from '../modules/customRules'
 
 export default function Settings() {
   const apiKey = useStore((s) => s.apiKey)
@@ -16,6 +17,9 @@ export default function Settings() {
   const [showGHToken, setShowGHToken] = useState(false)
   const [tempKey, setTempKey] = useState(apiKey)
   const [tempGH, setTempGH] = useState(githubToken)
+  const [customRules, setCustomRules] = useState(getCustomRules)
+  const [showRuleForm, setShowRuleForm] = useState(false)
+  const [newRule, setNewRule] = useState({ name: '', pattern: '', severity: 'Medium', message: '', suggestion: '', flags: 'i' })
 
   const handleSaveApiKey = () => {
     setApiKey(tempKey)
@@ -146,14 +150,97 @@ export default function Settings() {
         </button>
       </div>
 
+      {/* Custom Rules */}
+      <div className="bg-white border border-gray-200 rounded-xl p-6">
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center gap-2">
+            <FileCode size={18} />
+            <h3 className="font-semibold">Custom Analysis Rules</h3>
+          </div>
+          <span className="text-xs text-gray-500">{customRules.length} rule(s)</span>
+        </div>
+        <p className="text-sm text-gray-500 mb-4">Define regex-based rules that run alongside built-in modules. Enable "Custom Rules" in the module selector to use them.</p>
+
+        {customRules.length > 0 && (
+          <div className="space-y-2 mb-4">
+            {customRules.map(rule => (
+              <div key={rule.id} className={`flex items-center gap-3 p-3 rounded-lg border ${rule.enabled ? 'border-blue-200 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}>
+                <button onClick={() => setCustomRules(toggleCustomRule(rule.id))} className="flex-shrink-0">
+                  {rule.enabled ? <ToggleRight size={20} className="text-blue-600" /> : <ToggleLeft size={20} className="text-gray-400" />}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium">{rule.name}</div>
+                  <div className="text-xs text-gray-500 font-mono truncate">/{rule.pattern}/{rule.flags}</div>
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                  rule.severity === 'Critical' ? 'bg-red-100 text-red-700' :
+                  rule.severity === 'High' ? 'bg-orange-100 text-orange-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>{rule.severity}</span>
+                <button onClick={() => { setCustomRules(removeCustomRule(rule.id)); addNotification('Rule deleted', 'info') }} className="text-gray-400 hover:text-red-600">
+                  <X size={16} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {showRuleForm ? (
+          <div className="border border-blue-200 rounded-lg p-4 space-y-3 bg-blue-50/50">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-gray-600">Rule Name</label>
+                <input value={newRule.name} onChange={e => setNewRule({...newRule, name: e.target.value})} placeholder="e.g., No console.log" className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-600">Severity</label>
+                <select value={newRule.severity} onChange={e => setNewRule({...newRule, severity: e.target.value})} className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                  <option>Critical</option><option>High</option><option>Medium</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Regex Pattern</label>
+              <input value={newRule.pattern} onChange={e => setNewRule({...newRule, pattern: e.target.value})} placeholder="e.g., console\.log" className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Message</label>
+              <input value={newRule.message} onChange={e => setNewRule({...newRule, message: e.target.value})} placeholder="Description when this rule matches" className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+            </div>
+            <div>
+              <label className="text-xs font-medium text-gray-600">Suggestion (optional)</label>
+              <input value={newRule.suggestion} onChange={e => setNewRule({...newRule, suggestion: e.target.value})} placeholder="How to fix it" className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-lg text-sm" />
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  if (!newRule.name || !newRule.pattern) { addNotification('Name and pattern are required', 'error'); return }
+                  try { new RegExp(newRule.pattern) } catch { addNotification('Invalid regex pattern', 'error'); return }
+                  setCustomRules(addCustomRule(newRule))
+                  setNewRule({ name: '', pattern: '', severity: 'Medium', message: '', suggestion: '', flags: 'i' })
+                  setShowRuleForm(false)
+                  addNotification('Custom rule added', 'success')
+                }}
+                className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+              >Add Rule</button>
+              <button onClick={() => setShowRuleForm(false)} className="px-4 py-2 text-gray-600 text-sm font-medium rounded-lg hover:bg-gray-100">Cancel</button>
+            </div>
+          </div>
+        ) : (
+          <button onClick={() => setShowRuleForm(true)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 border border-blue-300 rounded-lg hover:bg-blue-50">
+            <Plus size={16} /> Add Custom Rule
+          </button>
+        )}
+      </div>
+
       {/* About */}
       <div className="bg-white border border-gray-200 rounded-xl p-6">
         <h3 className="font-semibold mb-3">About ValidAI</h3>
         <div className="space-y-1.5 text-sm text-gray-600">
-          <p><strong>Version:</strong> 0.2.0</p>
+          <p><strong>Version:</strong> 0.6.0</p>
           <p><strong>Stack:</strong> React + Vite + Tailwind CSS + IndexedDB</p>
           <p><strong>License:</strong> MIT</p>
-          <p><strong>Modules:</strong> 10 analysis modules</p>
+          <p><strong>Modules:</strong> 11 built-in + custom rules</p>
         </div>
       </div>
 

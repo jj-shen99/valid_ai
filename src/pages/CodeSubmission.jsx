@@ -6,7 +6,10 @@ import QuickStats from '../components/QuickStats'
 import FindingCard from '../components/FindingCard'
 import ExportPanel from '../components/ExportPanel'
 import { runAnalysis } from '../modules/analysisEngine'
-import { Play, Upload, Loader, ChevronDown, ChevronUp } from 'lucide-react'
+import { attachAutoFixes } from '../utils/autoFixer'
+import { Play, Upload, Loader, ChevronDown, ChevronUp, Layers, List } from 'lucide-react'
+import { groupFindings, deduplicateFindings } from '../utils/findingGrouper'
+import { getProfiles, addProfile, removeProfile } from '../utils/profileManager'
 
 const LANGUAGE_OPTIONS = [
   { value: 'python', label: 'Python' },
@@ -56,6 +59,12 @@ export default function CodeSubmission() {
   const [analysisScore, setAnalysisScore] = useState(null)
   const [showResults, setShowResults] = useState(false)
   const [incremental, setIncremental] = useState(false)
+  const [viewMode, setViewMode] = useState('list') // 'list' | 'grouped'
+  const [groupBy, setGroupBy] = useState('module')
+  const [userProfiles, setUserProfiles] = useState(getProfiles)
+  const [showSaveProfile, setShowSaveProfile] = useState(false)
+  const [profileName, setProfileName] = useState('')
+  const addNotification = useStore((s) => s.addNotification)
 
   const handleRunAnalysis = async () => {
     if (!code.trim()) {
@@ -71,7 +80,8 @@ export default function CodeSubmission() {
 
     try {
       const apiKey = useStore.getState().apiKey
-      const findings = await runAnalysis(code, language, selectedModules, prompt, apiKey, { incremental })
+      const rawFindings = await runAnalysis(code, language, selectedModules, prompt, apiKey, { incremental })
+      const findings = attachAutoFixes(rawFindings, code)
       
       findings.forEach(finding => {
         useStore.getState().addFinding(finding)
@@ -192,7 +202,26 @@ export default function CodeSubmission() {
 
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Test Profiles</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-gray-900">Test Profiles</h3>
+              <button onClick={() => setShowSaveProfile(s => !s)} className="text-xs text-blue-600 hover:text-blue-800 font-medium">+ Save Current</button>
+            </div>
+
+            {showSaveProfile && (
+              <div className="flex gap-2 mb-3">
+                <input value={profileName} onChange={e => setProfileName(e.target.value)} placeholder="Profile name" className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm" />
+                <button
+                  onClick={() => {
+                    if (!profileName.trim()) return
+                    setUserProfiles(addProfile(profileName.trim(), selectedModules))
+                    setProfileName(''); setShowSaveProfile(false)
+                    addNotification('Profile saved', 'success')
+                  }}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700"
+                >Save</button>
+              </div>
+            )}
+
             <div className="space-y-2">
               {TEST_PROFILES.map((profile) => (
                 <button
@@ -203,6 +232,18 @@ export default function CodeSubmission() {
                   <div className="font-medium text-gray-900">{profile.name}</div>
                   <div className="text-xs text-gray-600">{profile.description}</div>
                 </button>
+              ))}
+              {userProfiles.map((profile) => (
+                <div key={profile.id} className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSelectedModules(profile.modules)}
+                    className="flex-1 text-left px-4 py-3 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors bg-blue-50/30"
+                  >
+                    <div className="font-medium text-gray-900">{profile.name}</div>
+                    <div className="text-xs text-gray-500">{profile.modules.length} modules</div>
+                  </button>
+                  <button onClick={() => { setUserProfiles(removeProfile(profile.id)); addNotification('Profile deleted', 'info') }} className="text-gray-400 hover:text-red-600 p-1">✕</button>
+                </div>
               ))}
             </div>
           </div>
@@ -267,10 +308,40 @@ export default function CodeSubmission() {
               <QuickStats findings={analysisFindings} />
 
               <div className="space-y-3">
-                <p className="text-sm font-medium text-gray-700">{sortedFindings.length} findings</p>
-                {sortedFindings.map((finding, idx) => (
-                  <FindingCard key={finding.id || idx} finding={finding} />
-                ))}
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-700">{sortedFindings.length} findings</p>
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => setViewMode('list')} className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600'}`} title="List view"><List size={16} /></button>
+                    <button onClick={() => setViewMode('grouped')} className={`p-1.5 rounded ${viewMode === 'grouped' ? 'bg-blue-100 text-blue-700' : 'text-gray-400 hover:text-gray-600'}`} title="Grouped view"><Layers size={16} /></button>
+                    {viewMode === 'grouped' && (
+                      <select value={groupBy} onChange={e => setGroupBy(e.target.value)} className="text-xs border border-gray-300 rounded px-2 py-1">
+                        <option value="module">By Module</option>
+                        <option value="severity">By Severity</option>
+                        <option value="category">By Category</option>
+                      </select>
+                    )}
+                  </div>
+                </div>
+
+                {viewMode === 'list' ? (
+                  sortedFindings.map((finding, idx) => (
+                    <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} />
+                  ))
+                ) : (
+                  groupFindings(deduplicateFindings(sortedFindings), groupBy).map(group => (
+                    <details key={group.label} className="border border-gray-200 rounded-lg" open>
+                      <summary className="px-4 py-3 cursor-pointer flex items-center justify-between bg-gray-50 rounded-t-lg hover:bg-gray-100">
+                        <span className="text-sm font-semibold text-gray-800">{group.label}</span>
+                        <span className="text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full">{group.count}</span>
+                      </summary>
+                      <div className="p-3 space-y-2">
+                        {group.findings.map((finding, idx) => (
+                          <FindingCard key={finding.id || idx} finding={finding} sourceCode={code} />
+                        ))}
+                      </div>
+                    </details>
+                  ))
+                )}
               </div>
 
               <ExportPanel

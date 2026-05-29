@@ -10,6 +10,8 @@ const MODULES = [
   { id: 'mutation', name: 'Mutation Scorer', icon: '🧬', desc: 'Boundary operators, boolean negation targets' },
   { id: 'property', name: 'Property Generator', icon: '🎯', desc: 'Function signatures, testability analysis' },
   { id: 'differential', name: 'Differential Runner', icon: '⚖️', desc: 'Versioned functions, algorithm comparison' },
+  { id: 'typescript', name: 'TypeScript Analyzer', icon: '🔷', desc: 'any abuse, missing return types, unsafe assertions' },
+  { id: 'customRules', name: 'Custom Rules', icon: '📝', desc: 'User-defined regex rules (configure in Settings)' },
 
   { id: 'aiReview', name: 'AI Review Assistant', icon: '🤖', desc: 'Claude-powered anti-pattern detection' },
 ]

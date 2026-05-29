@@ -8,6 +8,8 @@ import { differentialRunner } from './differentialRunner'
 import { oracleChecker } from './oracleChecker'
 import { mutationScorer } from './mutationScorer'
 import { aiReviewAssistant } from './aiReviewAssistant'
+import { typescriptAnalyzer } from './typescriptAnalyzer'
+import { customRulesRunner } from './customRules'
 
 const MODULE_REGISTRY = {
   failureMode: failureModeScanner,
@@ -18,6 +20,8 @@ const MODULE_REGISTRY = {
   differential: differentialRunner,
   oracle: oracleChecker,
   mutation: mutationScorer,
+  typescript: typescriptAnalyzer,
+  customRules: customRulesRunner,
   aiReview: aiReviewAssistant,
 }
 
@@ -186,6 +190,18 @@ export const getModuleInfo = (moduleName) => {
       estimatedTime: '~5s',
     },
 
+    typescript: {
+      name: 'TypeScript Analyzer',
+      icon: '🔷',
+      description: 'Detects TS-specific anti-patterns: any abuse, missing return types, unsafe assertions, @ts-ignore suppression, and non-null assertion overuse.',
+      estimatedTime: '~3s',
+    },
+    customRules: {
+      name: 'Custom Rules',
+      icon: '📝',
+      description: 'User-defined regex-based rules configured in Settings. Create custom patterns to enforce team coding standards.',
+      estimatedTime: '~1s',
+    },
     aiReview: {
       name: 'AI Review Assistant',
       icon: '🤖',

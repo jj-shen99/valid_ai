@@ -6,6 +6,7 @@ import { complexityProfiler } from '../modules/complexityProfiler'
 import { differentialRunner } from '../modules/differentialRunner'
 import { oracleChecker } from '../modules/oracleChecker'
 import { mutationScorer } from '../modules/mutationScorer'
+import { typescriptAnalyzer } from '../modules/typescriptAnalyzer'
 
 const MODULE_REGISTRY = {
   failureMode: failureModeScanner,
@@ -16,6 +17,7 @@ const MODULE_REGISTRY = {
   differential: differentialRunner,
   oracle: oracleChecker,
   mutation: mutationScorer,
+  typescript: typescriptAnalyzer,
 }
 
 self.onmessage = function (e) {

@@ -2,7 +2,10 @@ import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { useStore } from './store'
 import { useHashRouter } from './hooks/useHashRouter'
 import Dashboard from './pages/Dashboard'
-import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X, Loader2 } from 'lucide-react'
+import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X, Loader2, Keyboard } from 'lucide-react'
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts'
+import CommandPalette from './components/CommandPalette'
+import ShortcutsModal from './components/ShortcutsModal'
 
 const CodeSubmission = lazy(() => import('./pages/CodeSubmission'))
 const AnalysisView = lazy(() => import('./pages/AnalysisView'))
@@ -23,6 +26,24 @@ export default function App() {
   const { page, navigate } = useHashRouter()
   const [dark, setDark] = useState(() => localStorage.getItem('validai_dark') === 'true')
   const [collapsed, setCollapsed] = useState(false)
+  const [cmdOpen, setCmdOpen] = useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = useState(false)
+
+  useKeyboardShortcuts([
+    { key: 'k', mod: true, action: () => setCmdOpen(o => !o) },
+    { key: '1', mod: true, action: () => navigate('dashboard') },
+    { key: '2', mod: true, action: () => navigate('submit') },
+    { key: '3', mod: true, action: () => navigate('github') },
+    { key: '4', mod: true, action: () => navigate('analysis') },
+    { key: '5', mod: true, action: () => navigate('trends') },
+    { key: '?', shift: true, action: () => setShortcutsOpen(o => !o) },
+  ])
+
+  const handleCommand = (id) => {
+    if (id === 'toggle-dark') setDark(d => !d)
+    else if (id === 'shortcuts') setShortcutsOpen(true)
+    else navigate(id)
+  }
   const loadFromDB = useStore((s) => s.loadFromDB)
   const loadSecrets = useStore((s) => s.loadSecrets)
   const notifications = useStore((s) => s.notifications)
@@ -104,6 +125,9 @@ export default function App() {
           </Suspense>
         </main>
       </div>
+
+      <CommandPalette open={cmdOpen} onClose={() => setCmdOpen(false)} onCommand={handleCommand} />
+      <ShortcutsModal open={shortcutsOpen} onClose={() => setShortcutsOpen(false)} />
 
       {/* Toast notifications */}
       {notifications.length > 0 && (
