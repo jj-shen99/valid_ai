@@ -55,6 +55,7 @@ export default function CodeSubmission() {
   const [analysisFindings, setAnalysisFindings] = useState([])
   const [analysisScore, setAnalysisScore] = useState(null)
   const [showResults, setShowResults] = useState(false)
+  const [incremental, setIncremental] = useState(false)
 
   const handleRunAnalysis = async () => {
     if (!code.trim()) {
@@ -70,7 +71,7 @@ export default function CodeSubmission() {
 
     try {
       const apiKey = useStore.getState().apiKey
-      const findings = await runAnalysis(code, language, selectedModules, prompt, apiKey)
+      const findings = await runAnalysis(code, language, selectedModules, prompt, apiKey, { incremental })
       
       findings.forEach(finding => {
         useStore.getState().addFinding(finding)
@@ -210,6 +211,12 @@ export default function CodeSubmission() {
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Selected Modules</h3>
             <ModuleSelector />
           </div>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <input type="checkbox" checked={incremental} onChange={e => setIncremental(e.target.checked)} className="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+            <span className="font-medium">Incremental mode</span>
+            <span className="text-xs text-gray-400">Only report findings on changed lines</span>
+          </label>
 
           <button
             onClick={handleRunAnalysis}

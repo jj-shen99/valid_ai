@@ -4,6 +4,28 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [0.5.0] — Phase 5
+
+### Architecture Enhancements
+- **URL-based hash routing** — Replaced `useState` page switching with `useHashRouter` hook. Enables deep-linking (`#/submit`, `#/analysis`, etc.), browser back/forward navigation, and bookmarkable pages.
+- **Web Worker analysis** — All 8 regex-based analysis modules now run off the main thread in a dedicated Web Worker. Falls back gracefully to main-thread execution if Worker is unavailable. AI Review stays on main thread (network-bound).
+- **Incremental / diff-only analysis** — New `diffAnalyzer` utility tracks previous code per-language. When "Incremental mode" is enabled in CodeSubmission, only findings on changed lines (±2 context lines) are reported. Identical resubmissions return instantly.
+- **Removed recharts dependency** — Migrated all remaining Recharts usage in `AnalysisDetails.jsx` (6 charts + predictive trend) to custom SVG chart components. New `SVGAreaChart` component created. Recharts (~450KB) fully removed from `package.json`.
+- **Persisted dark mode** — Dark/light preference now stored in `localStorage` and restored on reload.
+
+### New Files
+- `src/hooks/useHashRouter.js` — Lightweight hash-based router hook.
+- `src/workers/analysisWorker.js` — Web Worker for off-main-thread analysis.
+- `src/utils/diffAnalyzer.js` — Incremental diff computation and line-change tracking.
+- `src/components/charts/SVGAreaChart.jsx` — Reusable SVG area chart component.
+
+### Bundle Impact
+- Removed `recharts` (~450KB) from dependencies.
+- Analysis engine split into its own chunk for Worker loading.
+- Total production bundle significantly lighter.
+
+---
+
 ## [0.4.0] — Phase 4
 
 ### Performance Optimizations

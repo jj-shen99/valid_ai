@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react'
 import { ChevronDown, ChevronUp, GitCommit, User, Calendar, AlertTriangle, Shield, TrendingUp, Brain, Lightbulb, BarChart3, Filter } from 'lucide-react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend, AreaChart, Area } from 'recharts'
+import SVGAreaChart from './charts/SVGAreaChart'
+import SVGBarChart from './charts/SVGBarChart'
+import SVGPieChart from './charts/SVGPieChart'
+import SVGLineChart from './charts/SVGLineChart'
 
 const COLORS = ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#22c55e', '#8b5cf6', '#ec4899', '#06b6d4']
 const SEV_COLORS = { Critical: '#ef4444', High: '#f97316', Medium: '#eab308', Info: '#3b82f6' }
@@ -177,84 +180,37 @@ export default function AnalysisDetails({ analysisData, findings }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div className={card}>
             <h4 className="font-semibold mb-3">Commits Over Time</h4>
-            <ResponsiveContainer width="100%" height={250}>
-              <AreaChart data={stats.dailyCommits}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Area type="monotone" dataKey="count" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.15} name="Commits" />
-              </AreaChart>
-            </ResponsiveContainer>
+            <SVGAreaChart data={stats.dailyCommits} dataKey="count" nameKey="day" color="#3b82f6" height={250} />
           </div>
 
           <div className={card}>
             <h4 className="font-semibold mb-3">Commit Activity by Hour</h4>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={stats.hourlyActivity}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="hour" tick={{ fontSize: 10 }} interval={2} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#6366f1" radius={[4, 4, 0, 0]} name="Commits" />
-              </BarChart>
-            </ResponsiveContainer>
+            <SVGBarChart data={stats.hourlyActivity} dataKey="count" nameKey="hour" layout="horizontal" colors={['#6366f1']} height={250} />
           </div>
 
           <div className={card}>
             <h4 className="font-semibold mb-3">Findings by Severity</h4>
             {stats.sevData.length === 0 ? <p className="text-sm text-gray-400 py-16 text-center">No findings to display</p> : (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie data={stats.sevData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} innerRadius={50} paddingAngle={3} label={({ name, value }) => `${name}: ${value}`}>
-                    {stats.sevData.map((entry, i) => <Cell key={i} fill={SEV_COLORS[entry.name] || COLORS[i]} />)}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <SVGPieChart data={stats.sevData.map(d => ({ ...d, color: SEV_COLORS[d.name] || '#6366f1' }))} size={200} innerRadius={50} />
             )}
           </div>
 
           <div className={card}>
             <h4 className="font-semibold mb-3">Findings by Module</h4>
             {stats.moduleData.length === 0 ? <p className="text-sm text-gray-400 py-16 text-center">No findings to display</p> : (
-              <ResponsiveContainer width="100%" height={250}>
-                <BarChart data={stats.moduleData} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis type="number" tick={{ fontSize: 11 }} />
-                  <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={120} />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#8b5cf6" radius={[0, 4, 4, 0]} name="Findings" />
-                </BarChart>
-              </ResponsiveContainer>
+              <SVGBarChart data={stats.moduleData} dataKey="value" nameKey="name" layout="vertical" colors={['#8b5cf6']} height={250} />
             )}
           </div>
 
           <div className={card}>
             <h4 className="font-semibold mb-3">Commits by Author</h4>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={stats.authorData.slice(0, 10)}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" height={60} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="value" fill="#22c55e" radius={[4, 4, 0, 0]} name="Commits" />
-              </BarChart>
-            </ResponsiveContainer>
+            <SVGBarChart data={stats.authorData.slice(0, 10)} dataKey="value" nameKey="name" layout="horizontal" colors={['#22c55e']} height={250} />
           </div>
 
           <div className={card}>
             <h4 className="font-semibold mb-3">Top Issue Categories</h4>
             {stats.categoryData.length === 0 ? <p className="text-sm text-gray-400 py-16 text-center">No findings to display</p> : (
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie data={stats.categoryData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={90} label={({ name, value }) => `${value}`}>
-                    {stats.categoryData.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip />
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
+              <SVGPieChart data={stats.categoryData.map((d, i) => ({ ...d, color: COLORS[i % COLORS.length] }))} size={200} />
             )}
           </div>
         </div>
@@ -306,22 +262,19 @@ export default function AnalysisDetails({ analysisData, findings }) {
           {/* Predictive analysis */}
           <div className={card}>
             <h4 className="font-semibold mb-3">Predictive Quality Trend</h4>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={[
-                { period: 'Current', quality: stats.riskScore, predicted: null },
-                { period: '+1 week', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -5 : 3))) },
-                { period: '+2 weeks', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -8 : 5))) },
-                { period: '+1 month', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -12 : 8))) },
-              ]}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="period" tick={{ fontSize: 11 }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Line type="monotone" dataKey="quality" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} name="Current" />
-                <Line type="monotone" dataKey="predicted" stroke="#a855f7" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} name="Predicted" />
-                <Legend />
-              </LineChart>
-            </ResponsiveContainer>
+            <SVGLineChart
+              data={[
+                { name: 'Current', quality: stats.riskScore, predicted: null },
+                { name: '+1 week', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -5 : 3))) },
+                { name: '+2 weeks', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -8 : 5))) },
+                { name: '+1 month', quality: null, predicted: Math.min(100, Math.max(10, stats.riskScore + (stats.sevCounts.Critical > 0 ? -12 : 8))) },
+              ]}
+              lines={[
+                { key: 'quality', color: 'blue', label: 'Current' },
+                { key: 'predicted', color: 'purple', label: 'Predicted', dashed: true },
+              ]}
+              height={200}
+            />
             <p className="text-xs text-gray-400 mt-2">Prediction based on current finding trends and commit velocity.</p>
           </div>
         </div>

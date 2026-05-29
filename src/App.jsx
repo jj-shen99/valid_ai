@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
 import { useStore } from './store'
+import { useHashRouter } from './hooks/useHashRouter'
 import Dashboard from './pages/Dashboard'
 import { BarChart3, Settings as SettingsIcon, Home, FileText, TrendingUp, Github, Moon, Sun, PanelLeftClose, PanelLeft, CheckCircle, AlertCircle, Info, X, Loader2 } from 'lucide-react'
 
@@ -19,14 +20,15 @@ const NAV = [
 ]
 
 export default function App() {
-  const [page, setPage] = useState('dashboard')
-  const [dark, setDark] = useState(false)
+  const { page, navigate } = useHashRouter()
+  const [dark, setDark] = useState(() => localStorage.getItem('validai_dark') === 'true')
   const [collapsed, setCollapsed] = useState(false)
   const loadFromDB = useStore((s) => s.loadFromDB)
   const loadSecrets = useStore((s) => s.loadSecrets)
   const notifications = useStore((s) => s.notifications)
 
   useEffect(() => { loadFromDB(); loadSecrets() }, [])
+  useEffect(() => { localStorage.setItem('validai_dark', dark) }, [dark])
 
   const d = dark
   const cls = {
@@ -56,10 +58,11 @@ export default function App() {
           {NAV.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setPage(id)}
+              onClick={() => navigate(id)}
               className={`w-full flex items-center gap-3 rounded-md text-sm font-medium transition-colors
                 ${collapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2.5'}
                 ${page === id ? cls.active : `${cls.muted} ${cls.hover}`}`}
+              aria-current={page === id ? 'page' : undefined}
               title={collapsed ? label : undefined}
             >
               <Icon size={18} className="flex-shrink-0" />
@@ -94,7 +97,7 @@ export default function App() {
           {page === 'dashboard' && <Dashboard dark={dark} />}
           <Suspense fallback={<div className="flex items-center justify-center py-20"><Loader2 size={24} className="animate-spin text-blue-500" /><span className="ml-2 text-sm text-gray-500">Loading…</span></div>}>
             {page === 'submit' && <CodeSubmission />}
-            {page === 'analysis' && <AnalysisView onNavigate={setPage} />}
+            {page === 'analysis' && <AnalysisView onNavigate={navigate} />}
             {page === 'trends' && <TrendHistory />}
             {page === 'github' && <GitHubAnalysis />}
             {page === 'settings' && <Settings />}

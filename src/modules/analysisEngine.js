@@ -1,3 +1,4 @@
+import { computeChangedLines, filterByChangedLines, getLastCode, setLastCode, hasCodeChanged } from '../utils/diffAnalyzer'
 import { failureModeScanner } from './failureMode'
 import { securityProbe } from './securityProbe'
 import { hallucinationDetector } from './hallucinationDetector'
@@ -20,25 +21,113 @@ const MODULE_REGISTRY = {
   aiReview: aiReviewAssistant,
 }
 
-export const runAnalysis = async (code, language, selectedModules, prompt = '', apiKey = '') => {
-  const findings = []
+// ─── Web Worker pool ───
+let worker = null
+let jobId = 0
+const pending = new Map()
 
-  for (const moduleName of selectedModules) {
+function getWorker() {
+  if (!worker) {
+    try {
+      worker = new Worker(
+        new URL('../workers/analysisWorker.js', import.meta.url),
+        { type: 'module' }
+      )
+      worker.onmessage = (e) => {
+        const { id, findings } = e.data
+        const resolver = pending.get(id)
+        if (resolver) {
+          resolver(findings)
+          pending.delete(id)
+        }
+      }
+      worker.onerror = (err) => {
+        console.warn('[Worker] error, falling back to main thread', err)
+        worker = null
+        // Reject all pending jobs so they fall back
+        for (const [id, resolver] of pending) {
+          resolver(null)
+          pending.delete(id)
+        }
+      }
+    } catch {
+      worker = null
+    }
+  }
+  return worker
+}
+
+function runOnWorker(code, language, modules) {
+  return new Promise((resolve) => {
+    const w = getWorker()
+    if (!w) { resolve(null); return }
+    const id = ++jobId
+    pending.set(id, resolve)
+    w.postMessage({ id, code, language, modules })
+    // Timeout safety: resolve null after 30s
+    setTimeout(() => {
+      if (pending.has(id)) {
+        pending.delete(id)
+        resolve(null)
+      }
+    }, 30000)
+  })
+}
+
+function runOnMainThread(code, language, modules) {
+  const findings = []
+  for (const moduleName of modules) {
     const moduleFunc = MODULE_REGISTRY[moduleName]
     if (moduleFunc) {
       try {
-        let moduleFindings
-        if (moduleName === 'aiReview') {
-          moduleFindings = await moduleFunc(code, language, apiKey)
-        } else {
-          moduleFindings = moduleFunc(code, language)
-        }
-        findings.push(...moduleFindings)
+        findings.push(...moduleFunc(code, language))
       } catch (error) {
         console.error(`Error in module ${moduleName}:`, error)
       }
     }
   }
+  return findings
+}
+
+export const runAnalysis = async (code, language, selectedModules, prompt = '', apiKey = '', { incremental = false } = {}) => {
+  const syncModules = selectedModules.filter(m => m !== 'aiReview')
+  const hasAI = selectedModules.includes('aiReview')
+
+  // Incremental diff: compute changed lines vs previous submission
+  let changedLines = null
+  if (incremental) {
+    const prev = getLastCode(language)
+    if (prev && !hasCodeChanged(language, code)) {
+      // Code is identical to previous run — return empty
+      return []
+    }
+    changedLines = computeChangedLines(prev, code)
+  }
+
+  // Run sync modules on Web Worker (falls back to main thread)
+  let findings = []
+  if (syncModules.length > 0) {
+    const workerResult = await runOnWorker(code, language, syncModules)
+    findings = workerResult != null ? workerResult : runOnMainThread(code, language, syncModules)
+  }
+
+  // AI Review stays on main thread (network-bound)
+  if (hasAI) {
+    try {
+      const aiFindings = await aiReviewAssistant(code, language, apiKey)
+      findings.push(...aiFindings)
+    } catch (error) {
+      console.error('Error in module aiReview:', error)
+    }
+  }
+
+  // Filter to changed lines when in incremental mode
+  if (incremental && changedLines) {
+    findings = filterByChangedLines(findings, changedLines)
+  }
+
+  // Cache current code for future diffs
+  setLastCode(language, code)
 
   return findings.sort((a, b) => {
     const severityOrder = { Critical: 0, High: 1, Medium: 2, Info: 3 }

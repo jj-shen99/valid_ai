@@ -614,7 +614,7 @@ PR Annotations + Security Tab
 | Vite | Over Webpack | Faster dev server, native ESM, simpler config |
 | Regex patterns | Over AST parsing | Simpler, language-agnostic, fast execution |
 | Web Crypto API | Over JS crypto libs | Native browser API, hardware-accelerated |
-| SVG Charts + Recharts | Over D3 | Custom SVG charts for Trends pages; Recharts lazy-loaded for GitHub Analysis |
+| Custom SVG Charts | Over Recharts/D3 | Zero-dependency chart components (Line, Bar, Pie, Area); Recharts fully removed |
 | CodeMirror 6 | Over Monaco | Lighter weight, lazy-loaded language packs, better mobile support |
 | Vitest | Over Jest | Native Vite integration, faster test execution |
 
@@ -631,7 +631,15 @@ PR Annotations + Security Tab
 | Export generation | <5ms | JSON/MD/SARIF serialization |
 | GitHub commit fetch | 1–3s | Network dependent |
 
-All regex-based modules run synchronously in the browser's main thread. The AI Review Assistant is the only module that makes an external API call.
+All regex-based modules run in a dedicated Web Worker off the main thread, with automatic fallback to main-thread execution if Workers are unavailable. The AI Review Assistant runs on the main thread as the only module that makes an external API call.
+
+### Incremental Analysis
+
+When "Incremental mode" is enabled, the `diffAnalyzer` utility compares the current code against the last submission for the same language. Only findings on changed lines (±2 context lines) are reported. Identical resubmissions return instantly with zero findings.
+
+### Hash-Based Routing
+
+The app uses a lightweight `useHashRouter` hook (no dependency) that syncs `location.hash` with the current page. This enables deep-linking (e.g., `#/submit`), browser back/forward navigation, and bookmarkable URLs.
 
 ---
 
