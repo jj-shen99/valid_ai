@@ -4,6 +4,31 @@ All notable changes to ValidAI are documented here.
 
 ---
 
+## [1.2.0] — Phase 12
+
+### New Modules
+- **Enhancement 33: Race Condition Detector** — Detects shared mutable state in async code, unguarded Promise.all, non-atomic read-modify-write, setTimeout state mutation, missing awaits, event listener shared state, and unprotected global counters.
+- **Enhancement 34: API Contract Validator** — Validates JSDoc annotations against implementation: missing @param/@returns docs, undocumented thrown errors, type mismatches, inconsistent return types, and missing function documentation.
+- **Enhancement 35: Error Handling Auditor** — Detects uncaught promise chains, empty catch blocks, generic error messages, error-first callbacks without checks, catch-with-only-console.log, await outside try/catch, re-throwing without context, and missing unhandled rejection listeners.
+- **Enhancement 36: Regex Complexity Analyzer** — Flags ReDoS-vulnerable patterns (nested quantifiers, overlapping alternations), overly complex regex, unnecessary capture groups, global flag with .test(), unescaped special characters, dynamic RegExp with user input, and missing flags.
+- **Enhancement 37: Logging Checker** — Detects console.log in production, PII/secrets in log statements, missing error logging in catch blocks, string concatenation in logs, wrong log levels, verbose debug logging, large object logging, and missing request correlation IDs.
+
+### UI Integration
+- All 5 new modules added to ModuleSelector, Full Audit profiles (CodeSubmission + GitHubAnalysis), AnalysisView, and Dashboard.
+- Full Audit now includes all 19 modules.
+
+### Tests
+- 5 regression test suites (raceConditionDetector, apiContractValidator, errorHandlingAuditor, regexAnalyzer, loggingChecker).
+- Integration tests for v1.2.0 cross-module interactions.
+- Structured contract tests for all 5 new module exports.
+- Total test count: 750 (up from 679).
+
+### Docs
+- Version bumped to 1.2.0 in package.json, Settings, README.
+- README updated: module count 13 → 19, test count 679 → 750, added new module descriptions.
+
+---
+
 ## [1.1.0] — Phase 11
 
 ### Fixes

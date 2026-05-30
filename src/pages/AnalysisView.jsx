@@ -20,6 +20,11 @@ const MODULES = {
   accessibility: { name: 'Accessibility Analyzer', icon: '♿', desc: 'Detects a11y issues: missing alt text, empty links, form labels, keyboard accessibility, ARIA misuse, and color-only indicators.' },
   dependency: { name: 'Dependency Scanner', icon: '📦', desc: 'Detects vulnerable, deprecated, or compromised package imports and dependency patterns.' },
   deadCode: { name: 'Dead Code Detector', icon: '💀', desc: 'Finds unused variables, unreachable code, unused imports, empty functions, and commented-out code.' },
+  raceCondition: { name: 'Race Condition Detector', icon: '🏁', desc: 'Detects shared mutable state in async code, missing awaits, non-atomic operations, and promise race hazards.' },
+  apiContract: { name: 'API Contract Validator', icon: '📄', desc: 'Validates JSDoc annotations against implementation: param docs, return types, thrown errors, and type mismatches.' },
+  errorHandling: { name: 'Error Handling Auditor', icon: '🚨', desc: 'Detects empty catch blocks, uncaught promises, missing error logging, generic errors, and swallowed exceptions.' },
+  regexAnalysis: { name: 'Regex Complexity Analyzer', icon: '🔤', desc: 'Flags ReDoS-vulnerable patterns, overly complex regex, unnecessary captures, and dynamic RegExp risks.' },
+  logging: { name: 'Logging Checker', icon: '📋', desc: 'Detects console.log in production, PII in logs, missing error logging, and improper log levels.' },
   customRules: { name: 'Custom Rules', icon: '📝', desc: 'User-defined regex-based rules configured in Settings. Create custom patterns to enforce team coding standards.' },
   aiReview: { name: 'AI Review Assistant', icon: '🤖', desc: 'Uses Claude API for deep anti-pattern detection, architectural review, and context-aware suggestions beyond regex-based analysis.' },
 }

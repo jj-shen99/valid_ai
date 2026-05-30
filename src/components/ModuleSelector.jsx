@@ -14,6 +14,11 @@ const MODULES = [
   { id: 'accessibility', name: 'Accessibility Analyzer', icon: '♿', desc: 'Missing alt text, empty links, ARIA, keyboard a11y' },
   { id: 'dependency', name: 'Dependency Scanner', icon: '📦', desc: 'Vulnerable, deprecated, or compromised packages' },
   { id: 'deadCode', name: 'Dead Code Detector', icon: '💀', desc: 'Unused variables, unreachable code, empty functions' },
+  { id: 'raceCondition', name: 'Race Condition Detector', icon: '🏁', desc: 'Shared mutable state, missing awaits, promise races' },
+  { id: 'apiContract', name: 'API Contract Validator', icon: '📄', desc: 'JSDoc validation, param/return type checks' },
+  { id: 'errorHandling', name: 'Error Handling Auditor', icon: '🚨', desc: 'Empty catch, uncaught promises, swallowed errors' },
+  { id: 'regexAnalysis', name: 'Regex Analyzer', icon: '🔤', desc: 'ReDoS, complexity, unnecessary captures' },
+  { id: 'logging', name: 'Logging Checker', icon: '📋', desc: 'PII in logs, console.log, missing error logging' },
   { id: 'customRules', name: 'Custom Rules', icon: '📝', desc: 'User-defined regex rules (configure in Settings)' },
 
   { id: 'aiReview', name: 'AI Review Assistant', icon: '🤖', desc: 'Claude-powered anti-pattern detection' },

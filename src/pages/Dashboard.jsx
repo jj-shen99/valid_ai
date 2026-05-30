@@ -54,6 +54,11 @@ export default function Dashboard({ dark }) {
     { name: 'Accessibility Analyzer', status: true },
     { name: 'Dependency Scanner', status: true },
     { name: 'Dead Code Detector', status: true },
+    { name: 'Race Condition Detector', status: true },
+    { name: 'API Contract Validator', status: true },
+    { name: 'Error Handling Auditor', status: true },
+    { name: 'Regex Analyzer', status: true },
+    { name: 'Logging Checker', status: true },
     { name: 'Custom Rules', status: true },
     { name: 'AI Review Assistant', status: false },
   ]

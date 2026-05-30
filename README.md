@@ -4,11 +4,11 @@ A comprehensive web-based testing framework for validating AI-generated code acr
 
 ## Overview
 
-ValidAI is an open-source framework designed to systematically test AI-generated code for common failure patterns, security issues, and quality problems. It provides 13 specialized analysis modules that work together to catch bugs, hallucinations, and anti-patterns that AI models frequently introduce.
+ValidAI is an open-source framework designed to systematically test AI-generated code for common failure patterns, security issues, and quality problems. It provides 19 specialized analysis modules that work together to catch bugs, hallucinations, and anti-patterns that AI models frequently introduce.
 
 ## Key Features
 
-### 13 Analysis Modules
+### 19 Analysis Modules
 - **Failure Mode Scanner** — Off-by-one errors, silent exceptions, unbounded loops, type coercion, magic numbers, implicit globals
 - **Security Probe** — OWASP Top 10: SQL injection, XSS, hardcoded credentials, weak crypto, path traversal, disabled security controls
 - **Hallucination Detector** — Cross-references method calls against known APIs to detect non-existent or hallucinated functions
@@ -20,6 +20,12 @@ ValidAI is an open-source framework designed to systematically test AI-generated
 - **TypeScript Analyzer** — `any` abuse, missing return types, unsafe assertions, `@ts-ignore` suppression, non-null assertion overuse
 - **Accessibility Analyzer** — Missing alt text, empty links, form labels, keyboard accessibility, ARIA misuse, color-only indicators
 - **Dependency Scanner** — Vulnerable, deprecated, or compromised package imports and deprecated API patterns
+- **Dead Code Detector** — Unused variables, unreachable code, unused imports, empty functions, commented-out blocks
+- **Race Condition Detector** — Shared mutable state in async code, missing awaits, non-atomic operations, promise hazards
+- **API Contract Validator** — JSDoc validation, param/return type checks, undocumented throws, type mismatches
+- **Error Handling Auditor** — Empty catch blocks, uncaught promises, missing error logging, generic errors, swallowed exceptions
+- **Regex Complexity Analyzer** — ReDoS-vulnerable patterns, overly complex regex, unnecessary captures, dynamic RegExp risks
+- **Logging Checker** — console.log in production, PII in logs, missing error logging, improper log levels
 - **Custom Rules** — User-defined regex-based rules configured in Settings for team coding standards
 - **AI Review Assistant** — Claude-powered code review targeting AI anti-patterns (requires API key)
 
@@ -91,11 +97,11 @@ valid_ai/
 │   │                      # TrendHistory, GitHubAnalysis, Settings
 │   ├── components/        # CodeEditor, ModuleSelector, FindingCard,
 │   │                      # ExportPanel, QuickStats, TrendChart, etc.
-│   ├── modules/           # 14 analysis modules + analysisEngine
+│   ├── modules/           # 19 analysis modules + analysisEngine
 │   ├── utils/             # exporters, db, crypto, githubIntegration
 │   ├── store.js           # Zustand state management
 │   └── App.jsx            # Main app with routing and navigation
-├── tests/                 # Vitest unit + regression + integration + structured tests (679 tests)
+├── tests/                 # Vitest unit + regression + integration + structured tests (750 tests)
 ├── docs/                  # User Guide, Architecture
 ├── vscode-extension/      # VS Code extension prototype
 ├── vite.config.js

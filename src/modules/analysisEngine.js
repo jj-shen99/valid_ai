@@ -13,6 +13,11 @@ import { customRulesRunner } from './customRules'
 import { accessibilityAnalyzer } from './accessibilityAnalyzer'
 import { dependencyScanner } from './dependencyScanner'
 import { deadCodeDetector } from './deadCodeDetector'
+import { raceConditionDetector } from './raceConditionDetector'
+import { apiContractValidator } from './apiContractValidator'
+import { errorHandlingAuditor } from './errorHandlingAuditor'
+import { regexAnalyzer } from './regexAnalyzer'
+import { loggingChecker } from './loggingChecker'
 import { runWithTiming } from '../utils/perfTracker'
 
 const MODULE_REGISTRY = {
@@ -29,6 +34,11 @@ const MODULE_REGISTRY = {
   accessibility: accessibilityAnalyzer,
   dependency: dependencyScanner,
   deadCode: deadCodeDetector,
+  raceCondition: raceConditionDetector,
+  apiContract: apiContractValidator,
+  errorHandling: errorHandlingAuditor,
+  regexAnalysis: regexAnalyzer,
+  logging: loggingChecker,
   aiReview: aiReviewAssistant,
 }
 
@@ -245,6 +255,36 @@ export const getModuleInfo = (moduleName) => {
       name: 'Dead Code Detector',
       icon: '💀',
       description: 'Finds unused variables, unreachable code after return, unused imports, empty functions, and commented-out code.',
+      estimatedTime: '~1s',
+    },
+    raceCondition: {
+      name: 'Race Condition Detector',
+      icon: '🏁',
+      description: 'Detects shared mutable state in async code, missing awaits, non-atomic operations, and promise race hazards.',
+      estimatedTime: '~1s',
+    },
+    apiContract: {
+      name: 'API Contract Validator',
+      icon: '📄',
+      description: 'Validates JSDoc annotations against implementation: param docs, return types, thrown errors, and type mismatches.',
+      estimatedTime: '~1s',
+    },
+    errorHandling: {
+      name: 'Error Handling Auditor',
+      icon: '🚨',
+      description: 'Detects empty catch blocks, uncaught promises, missing error logging, generic errors, and swallowed exceptions.',
+      estimatedTime: '~1s',
+    },
+    regexAnalysis: {
+      name: 'Regex Complexity Analyzer',
+      icon: '🔤',
+      description: 'Flags ReDoS-vulnerable patterns, overly complex regex, unnecessary captures, and dynamic RegExp risks.',
+      estimatedTime: '~1s',
+    },
+    logging: {
+      name: 'Logging Checker',
+      icon: '📋',
+      description: 'Detects console.log in production, PII in logs, missing error logging, and improper log levels.',
       estimatedTime: '~1s',
     },
     customRules: {
