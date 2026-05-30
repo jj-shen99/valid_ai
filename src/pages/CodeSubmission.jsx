@@ -20,6 +20,10 @@ import { buildIssueUrl } from '../utils/githubIssueExporter'
 import { applyFilters } from '../utils/findingSearch'
 import { generateSummaryReport, downloadReport } from '../utils/summaryReport'
 import { recordAllModuleTrends } from '../utils/moduleTrend'
+import { evaluateGate, formatGateResult } from '../utils/qualityGate'
+import { recordFindings, getRecurringFindings } from '../utils/findingTimeline'
+import { getDuplicationScore } from '../utils/duplicationFinder'
+import { CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
 
 const LANGUAGE_OPTIONS = [
   { value: 'python', label: 'Python' },
@@ -69,6 +73,9 @@ export default function CodeSubmission() {
   const [complexityData, setComplexityData] = useState(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [severityFilter, setSeverityFilter] = useState([])
+  const [gateResult, setGateResult] = useState(null)
+  const [recurringFindings, setRecurringFindings] = useState([])
+  const [duplicationData, setDuplicationData] = useState(null)
   const addNotification = useStore((s) => s.addNotification)
 
   const handleAnnotate = (findingId, text) => {
@@ -128,6 +135,14 @@ export default function CodeSubmission() {
 
       setAnalysisFindings(findings)
       setAnalysisScore(Math.min(100, score))
+
+      // Quality gate evaluation
+      setGateResult(evaluateGate(findings, Math.min(100, score)))
+      // Record finding timeline
+      recordFindings(findings)
+      setRecurringFindings(getRecurringFindings(3))
+      // Code duplication analysis
+      setDuplicationData(getDuplicationScore(code, 3))
 
       const submission = {
         code,
@@ -532,6 +547,71 @@ export default function CodeSubmission() {
                       </div>
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Quality Gate */}
+              {gateResult && (
+                <div className={`border rounded-xl p-4 ${
+                  gateResult.status === 'pass' ? 'bg-emerald-50 border-emerald-200' :
+                  gateResult.status === 'fail' ? 'bg-red-50 border-red-200' :
+                  'bg-amber-50 border-amber-200'
+                }`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    {gateResult.status === 'pass' ? <CheckCircle size={18} className="text-emerald-600" /> :
+                     gateResult.status === 'fail' ? <XCircle size={18} className="text-red-600" /> :
+                     <AlertTriangle size={18} className="text-amber-600" />}
+                    <h4 className={`text-sm font-semibold ${
+                      gateResult.status === 'pass' ? 'text-emerald-800' :
+                      gateResult.status === 'fail' ? 'text-red-800' :
+                      'text-amber-800'
+                    }`}>Quality Gate: {gateResult.status.toUpperCase()}</h4>
+                  </div>
+                  {gateResult.violations.length > 0 ? (
+                    <ul className="text-xs space-y-1 ml-6">
+                      {gateResult.violations.map((v, i) => (
+                        <li key={i} className={gateResult.status === 'fail' ? 'text-red-700' : 'text-amber-700'}>{v.message}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-emerald-700 ml-6">All thresholds met.</p>
+                  )}
+                </div>
+              )}
+
+              {/* Recurring Findings */}
+              {recurringFindings.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                  <h4 className="text-sm font-semibold text-amber-800 mb-2">Recurring Issues ({recurringFindings.length})</h4>
+                  <div className="space-y-1">
+                    {recurringFindings.slice(0, 5).map((rf, i) => (
+                      <div key={i} className="flex items-center justify-between text-xs">
+                        <span className="text-amber-900 font-medium">{rf.category}</span>
+                        <span className="text-amber-600">{rf.count}× since {new Date(rf.firstSeen).toLocaleDateString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Code Duplication */}
+              {duplicationData && duplicationData.duplicateCount > 0 && (
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Code Duplication</h4>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xl font-bold text-gray-900">{duplicationData.percentage}%</p>
+                      <p className="text-[10px] text-gray-500">Duplicated</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xl font-bold text-gray-900">{duplicationData.duplicateCount}</p>
+                      <p className="text-[10px] text-gray-500">Blocks</p>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-3">
+                      <p className="text-xl font-bold text-gray-900">{duplicationData.score}</p>
+                      <p className="text-[10px] text-gray-500">DRY Score</p>
+                    </div>
+                  </div>
                 </div>
               )}
 
